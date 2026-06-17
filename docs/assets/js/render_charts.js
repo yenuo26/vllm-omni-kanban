@@ -1075,21 +1075,47 @@ function buildSeriesLabel(record, groupFields) {
   return truncateLegendLabel(label, 72);
 }
 
+function normalizeFilterSelection(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  if (value == null || value === "") {
+    return [];
+  }
+  return [String(value).trim()].filter(Boolean);
+}
+
+function recordFilterValue(record, field) {
+  const raw = record[field];
+  if (raw === null || raw === undefined) {
+    return null;
+  }
+  return String(raw).trim();
+}
+
 function filterRecords(records, filters) {
   return records.filter((record) => Object.entries(filters).every(([field, value]) => {
-    if (!value) {
+    const selected = normalizeFilterSelection(value);
+    if (!selected.length) {
       return true;
     }
-    const raw = record[field];
-    if (raw === null || raw === undefined) {
+    const recordValue = recordFilterValue(record, field);
+    if (recordValue === null) {
       return false;
     }
-    if (typeof raw === "number") {
-      return String(raw) === value.trim();
-    }
     // Exact string match (substring match would e.g. let qwen3_omni match qwen3_omni_chunk).
-    return String(raw).trim() === value.trim();
+    return selected.some((item) => recordValue === item);
   }));
+}
+
+function formatFilterTriggerLabel(selectedValues) {
+  if (!selectedValues.length) {
+    return "All";
+  }
+  if (selectedValues.length === 1) {
+    return selectedValues[0];
+  }
+  return `${selectedValues.length} selected`;
 }
 
 /** Newest run first (for summary, table, and consistent “latest” semantics). */
@@ -1630,6 +1656,7 @@ function buildOmniChartOption(metricGroup, records, groupFields, chartPointPerDa
 }
 
 let _historyInstanceSeq = 0;
+let _omniFilterOutsideClickBound = false;
 
 function ensureHistoryInstanceId(root) {
   if (!root.dataset.historyInstance) {
@@ -1638,53 +1665,143 @@ function ensureHistoryInstanceId(root) {
   return root.dataset.historyInstance;
 }
 
-function renderOmniFilterBar(payload, filters, root) {
+function bindOmniFilterOutsideClick() {
+  if (_omniFilterOutsideClickBound) {
+    return;
+  }
+  _omniFilterOutsideClickBound = true;
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".omni-filter__multiselect.is-open").forEach((multiselect) => {
+      multiselect.classList.remove("is-open");
+      multiselect.querySelector(".omni-filter__trigger")?.setAttribute("aria-expanded", "false");
+    });
+  });
+}
+
+function closeOmniFilterDropdowns(container) {
+  container.querySelectorAll(".omni-filter__multiselect.is-open").forEach((multiselect) => {
+    multiselect.classList.remove("is-open");
+    multiselect.querySelector(".omni-filter__trigger")?.setAttribute("aria-expanded", "false");
+  });
+}
+
+function getOpenOmniFilterField(root) {
+  const open = root.querySelector(".omni-filter__multiselect.is-open");
+  if (!open) {
+    return null;
+  }
+  return open.closest("[data-omni-filter-wrap]")?.dataset.omniFilterWrap ?? null;
+}
+
+function renderOmniFilterBar(payload, filters, root, options = {}) {
   const container = root.querySelector("[data-omni-history-filters]");
   if (!container) {
     return;
   }
+  bindOmniFilterOutsideClick();
+  const openField = options.openField ?? null;
   const hid = ensureHistoryInstanceId(root);
   container.innerHTML = payload.filters.map((field) => {
-    const datalistId = `omni-filter-${field}-${hid}`;
+    const selected = new Set(normalizeFilterSelection(filters[field]));
     const options = (payload.filter_options?.[field] || [])
-      .map((option) => `<option value="${escapeHtml(String(option))}"></option>`)
+      .map((option) => {
+        const value = String(option);
+        const checked = selected.has(value) ? " checked" : "";
+        return `
+          <label class="omni-filter__option">
+            <input
+              type="checkbox"
+              class="omni-filter__checkbox"
+              data-omni-filter-option="${field}"
+              value="${escapeHtml(value)}"
+              ${checked}
+            >
+            <span class="omni-filter__option-label">${escapeHtml(value)}</span>
+          </label>
+        `;
+      })
       .join("");
+    const triggerLabel = formatFilterTriggerLabel([...selected]);
+    const dropdownId = `omni-filter-${field}-${hid}`;
     return `
-      <label class="omni-filter">
-        <span class="omni-filter__label">${escapeHtml(humanizeField(field))}</span>
-        <input
-          class="omni-filter__input"
-          type="text"
-          list="${datalistId}"
-          data-omni-filter="${field}"
-          value="${escapeHtml(filters[field] || "")}"
-          placeholder="All"
-        >
-        <datalist id="${datalistId}">${options}</datalist>
-      </label>
+      <div class="omni-filter" data-omni-filter-wrap="${field}">
+        <span class="omni-filter__label" id="${dropdownId}-label">${escapeHtml(humanizeField(field))}</span>
+        <div class="omni-filter__multiselect">
+          <button
+            type="button"
+            class="omni-filter__trigger"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-labelledby="${dropdownId}-label"
+            data-omni-filter-trigger="${field}"
+          >
+            <span class="omni-filter__trigger-text">${escapeHtml(triggerLabel)}</span>
+          </button>
+          <div
+            class="omni-filter__dropdown"
+            id="${dropdownId}"
+            role="listbox"
+            aria-multiselectable="true"
+          >${options || `<p class="omni-filter__empty">No options</p>`}</div>
+        </div>
+      </div>
     `;
   }).join("") + `
     <button type="button" class="omni-filter__reset" data-omni-filter-reset>Reset filters</button>
   `;
 
-  container.querySelectorAll("[data-omni-filter]").forEach((input) => {
-    input.addEventListener("input", () => {
-      renderQwen3OmniHistory(payload, root);
+  container.querySelectorAll("[data-omni-filter-trigger]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const multiselect = button.closest(".omni-filter__multiselect");
+      const wasOpen = multiselect.classList.contains("is-open");
+      closeOmniFilterDropdowns(container);
+      if (!wasOpen) {
+        multiselect.classList.add("is-open");
+        button.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+  container.querySelectorAll(".omni-filter__dropdown").forEach((dropdown) => {
+    dropdown.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+  });
+  container.querySelectorAll("[data-omni-filter-option]").forEach((input) => {
+    input.addEventListener("change", () => {
+      renderQwen3OmniHistory(payload, root, {
+        preserveOpenFilter: input.dataset.omniFilterOption,
+      });
     });
   });
   container.querySelector("[data-omni-filter-reset]")?.addEventListener("click", () => {
-    container.querySelectorAll("[data-omni-filter]").forEach((input) => {
-      input.value = "";
+    container.querySelectorAll("[data-omni-filter-option]").forEach((input) => {
+      input.checked = false;
     });
     renderQwen3OmniHistory(payload, root);
   });
+
+  if (openField) {
+    const wrap = container.querySelector(`[data-omni-filter-wrap="${openField}"]`);
+    const multiselect = wrap?.querySelector(".omni-filter__multiselect");
+    const trigger = multiselect?.querySelector(".omni-filter__trigger");
+    if (multiselect && trigger) {
+      multiselect.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+  }
 }
 
 function currentOmniFilters(payload, root) {
-  const inputs = [...root.querySelectorAll("[data-omni-filter]")];
   return payload.filters.reduce((acc, field) => {
-    const input = inputs.find((item) => item.dataset.omniFilter === field);
-    acc[field] = input?.value?.trim() || "";
+    const wrap = root.querySelector(`[data-omni-filter-wrap="${field}"]`);
+    if (!wrap) {
+      acc[field] = [];
+      return acc;
+    }
+    acc[field] = [...wrap.querySelectorAll(`[data-omni-filter-option="${field}"]:checked`)]
+      .map((input) => input.value.trim())
+      .filter(Boolean);
     return acc;
   }, {});
 }
@@ -1898,9 +2015,10 @@ function renderOmniCharts(payload, records, root, renderFn) {
   }
 }
 
-function renderQwen3OmniHistory(payload, root) {
+function renderQwen3OmniHistory(payload, root, options = {}) {
   const filters = currentOmniFilters(payload, root);
-  renderOmniFilterBar(payload, filters, root);
+  const openField = options.preserveOpenFilter ?? getOpenOmniFilterField(root);
+  renderOmniFilterBar(payload, filters, root, { openField });
   const filtered = sortRecordsByTimeDesc(filterRecords(payload.records, filters));
   renderOmniSummary(filtered, payload.group_fields, root);
   renderOmniCharts(payload, filtered, root, renderQwen3OmniHistory);
