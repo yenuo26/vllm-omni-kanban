@@ -1,7 +1,7 @@
 # Test Report
 
 <p class="dashboard-intro">
-Browse nightly Buildkite and local test reports. Use the tabs to switch report type and the log selector to pick a nightly run date.
+Browse nightly Buildkite and local test reports. Use the tabs to switch report type and the date selector to pick a nightly run.
 </p>
 
 <section
@@ -19,8 +19,8 @@ Browse nightly Buildkite and local test reports. Use the tabs to switch report t
       <button type="button" class="omni-report-type-btn" data-report-type="release" role="tab" aria-selected="false">Release</button>
     </div>
     <label class="omni-report-log-filter" data-report-log-filter>
-      <span class="omni-report-log-filter__label">日志</span>
-      <select class="omni-report-log-filter__select" data-report-log-select aria-label="Select nightly report log"></select>
+      <span class="omni-report-log-filter__label">日期</span>
+      <select class="omni-report-log-filter__select" data-report-log-select aria-label="Select nightly report date"></select>
     </label>
   </div>
 </div>
