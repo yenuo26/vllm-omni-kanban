@@ -43,6 +43,7 @@ nav:
       - VoxCPM2: models/voxcpm2.md
   - Alerts: alerts.md
   - Reports:
+      - Test Report: reports/nightly-test-report.md
       - Archive: reports/index.md
       - 2026-03-14: reports/2026-03-14.md
       - 2026-03-13: reports/2026-03-13.md
@@ -61,5 +62,6 @@ nav:
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js
   - assets/js/render_charts.js
+  - assets/js/render_nightly_report.js
 extra_css:
   - assets/stylesheets/dashboard.css

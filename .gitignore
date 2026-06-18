@@ -78,6 +78,9 @@ docs/_build/
 # Generated chart JSON (do not commit)
 docs/assets/charts/*.json
 
+# Generated nightly report copies for MkDocs (do not commit)
+docs/assets/nightly_reports/
+
 # PyBuilder
 .pybuilder/
 target/

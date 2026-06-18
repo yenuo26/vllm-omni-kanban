@@ -1117,3 +1117,96 @@ body.dashboard-home .technical-rail__sublink--active {
   background: color-mix(in srgb, var(--dashboard-healthy) 20%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dashboard-healthy) 45%, transparent);
 }
+
+.omni-report-page {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.omni-report-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.85rem 1rem;
+}
+
+.omni-report-type-toggle {
+  display: inline-flex;
+  padding: 0.28rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.9rem;
+  background: var(--dashboard-panel-strong);
+  gap: 0.28rem;
+}
+
+.omni-report-type-btn {
+  min-height: 2.5rem;
+  padding: 0.55rem 1rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: var(--dashboard-muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.omni-report-type-btn.is-active {
+  background: var(--dashboard-panel-bg);
+  color: var(--dashboard-text);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.omni-report-type-btn:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.22);
+  outline-offset: 2px;
+}
+
+.omni-report-log-filter {
+  display: grid;
+  gap: 0.38rem;
+  min-width: min(100%, 14rem);
+}
+
+.omni-report-log-filter__label {
+  color: var(--dashboard-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.omni-report-log-filter__select {
+  min-height: 2.75rem;
+  padding: 0.72rem 0.9rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.9rem;
+  background: var(--dashboard-panel-strong);
+  color: var(--dashboard-text);
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+}
+
+.omni-report-log-filter__select:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.22);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.omni-report-panel {
+  min-width: 0;
+}
+
+.omni-report-panel--empty {
+  padding: 2rem 0;
+}
+
+.omni-report-frame {
+  display: block;
+  width: 100%;
+  min-height: 70vh;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 1rem;
+  background: var(--dashboard-panel-bg);
+}

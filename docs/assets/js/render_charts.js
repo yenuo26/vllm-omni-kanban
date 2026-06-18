@@ -1093,12 +1093,19 @@ function recordFilterValue(record, field) {
   return String(raw).trim();
 }
 
-function filterRecords(records, filters) {
-  return records.filter((record) => Object.entries(filters).every(([field, value]) => {
+function normalizeActiveFilters(filters) {
+  return Object.entries(filters).flatMap(([field, value]) => {
     const selected = normalizeFilterSelection(value);
-    if (!selected.length) {
-      return true;
-    }
+    return selected.length ? [{ field, selected }] : [];
+  });
+}
+
+function filterRecords(records, filters) {
+  const activeFilters = normalizeActiveFilters(filters);
+  if (!activeFilters.length) {
+    return records;
+  }
+  return records.filter((record) => activeFilters.every(({ field, selected }) => {
     const recordValue = recordFilterValue(record, field);
     if (recordValue === null) {
       return false;
@@ -1670,8 +1677,11 @@ function bindOmniFilterOutsideClick() {
     return;
   }
   _omniFilterOutsideClickBound = true;
-  document.addEventListener("click", () => {
+  document.addEventListener("click", (event) => {
     document.querySelectorAll(".omni-filter__multiselect.is-open").forEach((multiselect) => {
+      if (multiselect.contains(event.target)) {
+        return;
+      }
       multiselect.classList.remove("is-open");
       multiselect.querySelector(".omni-filter__trigger")?.setAttribute("aria-expanded", "false");
     });
@@ -1685,28 +1695,95 @@ function closeOmniFilterDropdowns(container) {
   });
 }
 
-function getOpenOmniFilterField(root) {
-  const open = root.querySelector(".omni-filter__multiselect.is-open");
-  if (!open) {
-    return null;
+function updateOmniFilterTriggerLabel(root, field) {
+  const wrap = root.querySelector(`[data-omni-filter-wrap="${field}"]`);
+  if (!wrap) {
+    return;
   }
-  return open.closest("[data-omni-filter-wrap]")?.dataset.omniFilterWrap ?? null;
+  const selected = [...wrap.querySelectorAll(`[data-omni-filter-option="${field}"]:checked`)]
+    .map((input) => input.value.trim())
+    .filter(Boolean);
+  const triggerText = wrap.querySelector(".omni-filter__trigger-text");
+  if (triggerText) {
+    triggerText.textContent = formatFilterTriggerLabel(selected);
+  }
 }
 
-function renderOmniFilterBar(payload, filters, root, options = {}) {
+function updateAllOmniFilterTriggerLabels(root, payload) {
+  payload.filters.forEach((field) => updateOmniFilterTriggerLabel(root, field));
+}
+
+function setOmniHistoryPayload(root, payload) {
+  root._omniHistoryPayload = payload;
+}
+
+function getOmniHistoryPayload(root) {
+  return root._omniHistoryPayload;
+}
+
+function renderOmniHistoryViews(payload, root) {
+  const filters = currentOmniFilters(payload, root);
+  const filtered = sortRecordsByTimeDesc(filterRecords(payload.records, filters));
+  renderOmniSummary(filtered, payload.group_fields, root);
+  renderOmniCharts(payload, filtered, root, renderQwen3OmniHistory);
+  renderOmniTable(payload, filtered, root);
+}
+
+function bindOmniFilterBarEvents(container, root) {
+  if (container.dataset.omniFilterEventsBound === "1") {
+    return;
+  }
+  container.dataset.omniFilterEventsBound = "1";
+  bindOmniFilterOutsideClick();
+
+  container.addEventListener("click", (event) => {
+    const trigger = event.target.closest("[data-omni-filter-trigger]");
+    if (trigger) {
+      const multiselect = trigger.closest(".omni-filter__multiselect");
+      const wasOpen = multiselect.classList.contains("is-open");
+      closeOmniFilterDropdowns(container);
+      if (!wasOpen) {
+        multiselect.classList.add("is-open");
+        trigger.setAttribute("aria-expanded", "true");
+      }
+      return;
+    }
+
+    if (event.target.closest("[data-omni-filter-reset]")) {
+      container.querySelectorAll("[data-omni-filter-option]").forEach((input) => {
+        input.checked = false;
+      });
+      const payload = getOmniHistoryPayload(root);
+      if (payload) {
+        updateAllOmniFilterTriggerLabels(root, payload);
+        renderOmniHistoryViews(payload, root);
+      }
+    }
+  });
+
+  container.addEventListener("change", (event) => {
+    const input = event.target.closest("[data-omni-filter-option]");
+    if (!input) {
+      return;
+    }
+    updateOmniFilterTriggerLabel(root, input.dataset.omniFilterOption);
+    const payload = getOmniHistoryPayload(root);
+    if (payload) {
+      renderOmniHistoryViews(payload, root);
+    }
+  });
+}
+
+function initOmniFilterBar(payload, root) {
   const container = root.querySelector("[data-omni-history-filters]");
   if (!container) {
     return;
   }
-  bindOmniFilterOutsideClick();
-  const openField = options.openField ?? null;
   const hid = ensureHistoryInstanceId(root);
   container.innerHTML = payload.filters.map((field) => {
-    const selected = new Set(normalizeFilterSelection(filters[field]));
     const options = (payload.filter_options?.[field] || [])
       .map((option) => {
         const value = String(option);
-        const checked = selected.has(value) ? " checked" : "";
         return `
           <label class="omni-filter__option">
             <input
@@ -1714,14 +1791,12 @@ function renderOmniFilterBar(payload, filters, root, options = {}) {
               class="omni-filter__checkbox"
               data-omni-filter-option="${field}"
               value="${escapeHtml(value)}"
-              ${checked}
             >
             <span class="omni-filter__option-label">${escapeHtml(value)}</span>
           </label>
         `;
       })
       .join("");
-    const triggerLabel = formatFilterTriggerLabel([...selected]);
     const dropdownId = `omni-filter-${field}-${hid}`;
     return `
       <div class="omni-filter" data-omni-filter-wrap="${field}">
@@ -1731,17 +1806,16 @@ function renderOmniFilterBar(payload, filters, root, options = {}) {
             type="button"
             class="omni-filter__trigger"
             aria-expanded="false"
-            aria-haspopup="listbox"
+            aria-haspopup="true"
+            aria-controls="${dropdownId}"
             aria-labelledby="${dropdownId}-label"
             data-omni-filter-trigger="${field}"
           >
-            <span class="omni-filter__trigger-text">${escapeHtml(triggerLabel)}</span>
+            <span class="omni-filter__trigger-text">All</span>
           </button>
           <div
             class="omni-filter__dropdown"
             id="${dropdownId}"
-            role="listbox"
-            aria-multiselectable="true"
           >${options || `<p class="omni-filter__empty">No options</p>`}</div>
         </div>
       </div>
@@ -1749,47 +1823,7 @@ function renderOmniFilterBar(payload, filters, root, options = {}) {
   }).join("") + `
     <button type="button" class="omni-filter__reset" data-omni-filter-reset>Reset filters</button>
   `;
-
-  container.querySelectorAll("[data-omni-filter-trigger]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const multiselect = button.closest(".omni-filter__multiselect");
-      const wasOpen = multiselect.classList.contains("is-open");
-      closeOmniFilterDropdowns(container);
-      if (!wasOpen) {
-        multiselect.classList.add("is-open");
-        button.setAttribute("aria-expanded", "true");
-      }
-    });
-  });
-  container.querySelectorAll(".omni-filter__dropdown").forEach((dropdown) => {
-    dropdown.addEventListener("click", (event) => {
-      event.stopPropagation();
-    });
-  });
-  container.querySelectorAll("[data-omni-filter-option]").forEach((input) => {
-    input.addEventListener("change", () => {
-      renderQwen3OmniHistory(payload, root, {
-        preserveOpenFilter: input.dataset.omniFilterOption,
-      });
-    });
-  });
-  container.querySelector("[data-omni-filter-reset]")?.addEventListener("click", () => {
-    container.querySelectorAll("[data-omni-filter-option]").forEach((input) => {
-      input.checked = false;
-    });
-    renderQwen3OmniHistory(payload, root);
-  });
-
-  if (openField) {
-    const wrap = container.querySelector(`[data-omni-filter-wrap="${openField}"]`);
-    const multiselect = wrap?.querySelector(".omni-filter__multiselect");
-    const trigger = multiselect?.querySelector(".omni-filter__trigger");
-    if (multiselect && trigger) {
-      multiselect.classList.add("is-open");
-      trigger.setAttribute("aria-expanded", "true");
-    }
-  }
+  bindOmniFilterBarEvents(container, root);
 }
 
 function currentOmniFilters(payload, root) {
@@ -2015,14 +2049,14 @@ function renderOmniCharts(payload, records, root, renderFn) {
   }
 }
 
-function renderQwen3OmniHistory(payload, root, options = {}) {
-  const filters = currentOmniFilters(payload, root);
-  const openField = options.preserveOpenFilter ?? getOpenOmniFilterField(root);
-  renderOmniFilterBar(payload, filters, root, { openField });
-  const filtered = sortRecordsByTimeDesc(filterRecords(payload.records, filters));
-  renderOmniSummary(filtered, payload.group_fields, root);
-  renderOmniCharts(payload, filtered, root, renderQwen3OmniHistory);
-  renderOmniTable(payload, filtered, root);
+function renderQwen3OmniHistory(payload, root) {
+  setOmniHistoryPayload(root, payload);
+  const filterContainer = root.querySelector("[data-omni-history-filters]");
+  if (filterContainer && filterContainer.dataset.omniFilterBarReady !== "1") {
+    initOmniFilterBar(payload, root);
+    filterContainer.dataset.omniFilterBarReady = "1";
+  }
+  renderOmniHistoryViews(payload, root);
 }
 
 async function loadQwen3OmniHistory() {

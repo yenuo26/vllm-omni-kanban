@@ -69,3 +69,12 @@ def on_startup(command: str, dirty: bool, **kwargs) -> None:
     )
     if proc.returncode != 0:
         raise RuntimeError(f"generate_charts.py exited with status {proc.returncode}")
+
+    report_sync = repo_root / "scripts" / "sync_nightly_test_reports.py"
+    proc = subprocess.run(
+        [sys.executable, str(report_sync)],
+        cwd=str(repo_root),
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(f"sync_nightly_test_reports.py exited with status {proc.returncode}")

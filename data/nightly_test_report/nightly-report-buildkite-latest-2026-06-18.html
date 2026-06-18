@@ -1,0 +1,4878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nightly Buildkite report - 2026-06-18</title>
+<style>
+
+:root {
+  /* Dashboard palette (aligned with omni docs / slate home — cool gray, blue accent) */
+  --dashboard-bg: #f5f8fb;
+  --dashboard-panel-bg: #ffffff;
+  --dashboard-panel-strong: #f1f5f9;
+  --dashboard-border: #d9e2ec;
+  --dashboard-border-strong: #d6dde6;
+  --dashboard-text: #26323f;
+  --dashboard-muted: #607080;
+  --dashboard-soft-text: #52606d;
+  --dashboard-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+  --dashboard-badge-bg: #edf3f8;
+  --dashboard-badge-text: #435466;
+  --dashboard-chart-text: #5b6775;
+  --dashboard-chart-grid: rgba(148, 163, 184, 0.2);
+  --omni-baseline-line: #64748b;
+  --omni-baseline-label-bg: rgba(241, 245, 249, 0.96);
+  --omni-baseline-label-fg: #0f172a;
+  --omni-baseline-label-border: rgba(100, 116, 139, 0.45);
+  --dashboard-tooltip-bg: rgba(15, 23, 42, 0.92);
+  --dashboard-tooltip-border: rgba(148, 163, 184, 0.28);
+  --dashboard-tooltip-text: #f8fafc;
+  --dashboard-healthy: #1f9d63;
+  --dashboard-alert: #d14343;
+  --dashboard-healthy-bg: rgba(31, 157, 99, 0.1);
+  --dashboard-alert-bg: rgba(209, 67, 67, 0.11);
+  --dashboard-warning: #d97706;
+  --dashboard-warning-bg: rgba(217, 119, 6, 0.12);
+  --dashboard-violet: #4f46e5;
+  --dashboard-violet-bg: rgba(79, 70, 229, 0.1);
+  /* Internal aliases (report markup) */
+  --bg: var(--dashboard-bg);
+  --surface: var(--dashboard-panel-bg);
+  --surface-muted: #edf3f8;
+  --text: var(--dashboard-text);
+  --muted: var(--dashboard-muted);
+  --border: var(--dashboard-border);
+  --shadow: var(--dashboard-shadow);
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-soft: rgba(59, 130, 246, 0.22);
+  --accent-tint: rgba(59, 130, 246, 0.08);
+  --ci: #2563eb;
+  --ci-soft: rgba(59, 130, 246, 0.16);
+  --danger: var(--dashboard-alert);
+  --danger-strong: #b91c1c;
+  --danger-bg: rgba(209, 67, 67, 0.08);
+  --danger-edge: var(--dashboard-alert);
+  --ok: var(--dashboard-healthy);
+  --ok-bg: var(--dashboard-healthy-bg);
+  --ok-edge: var(--dashboard-healthy);
+  --fail-bg: var(--dashboard-alert-bg);
+  --fail-edge: var(--dashboard-alert);
+  --unknown-bg: rgba(148, 163, 184, 0.08);
+  --unknown-edge: #64748b;
+  --code-bg-top: #334155;
+  --code-bg-bottom: #1e293b;
+  --code-fg: #e2e8f0;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-bar: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dashboard-bg: #111827;
+    --dashboard-panel-bg: #162130;
+    --dashboard-panel-strong: #131d2b;
+    --dashboard-border: rgba(148, 163, 184, 0.18);
+    --dashboard-border-strong: rgba(148, 163, 184, 0.22);
+    --dashboard-text: #edf3fb;
+    --dashboard-muted: #b6c4d5;
+    --dashboard-soft-text: #c6d3e1;
+    --dashboard-shadow: 0 20px 40px rgba(2, 6, 23, 0.35);
+    --dashboard-badge-bg: rgba(148, 163, 184, 0.12);
+    --dashboard-badge-text: #d5dfeb;
+    --dashboard-chart-text: #c8d4e3;
+    --dashboard-chart-grid: rgba(148, 163, 184, 0.16);
+    --omni-baseline-line: #94a3b8;
+    --omni-baseline-label-bg: rgba(30, 41, 55, 0.94);
+    --omni-baseline-label-fg: #f1f5f9;
+    --omni-baseline-label-border: rgba(148, 163, 184, 0.4);
+    --dashboard-tooltip-bg: rgba(15, 23, 42, 0.96);
+    --dashboard-tooltip-border: rgba(148, 163, 184, 0.24);
+    --dashboard-tooltip-text: #f8fafc;
+    --dashboard-healthy-bg: rgba(31, 157, 99, 0.16);
+    --dashboard-alert-bg: rgba(209, 67, 67, 0.18);
+    --dashboard-warning: #fbbf24;
+    --dashboard-warning-bg: rgba(251, 191, 36, 0.14);
+    --dashboard-violet: #818cf8;
+    --dashboard-violet-bg: rgba(129, 140, 248, 0.14);
+    --surface-muted: rgba(148, 163, 184, 0.1);
+    --accent: #60a5fa;
+    --accent-hover: #3b82f6;
+    --accent-soft: rgba(96, 165, 250, 0.28);
+    --accent-tint: rgba(96, 165, 250, 0.12);
+    --ci: #60a5fa;
+    --ci-soft: rgba(96, 165, 250, 0.2);
+    --danger-strong: #fecaca;
+    --danger-bg: rgba(209, 67, 67, 0.14);
+    --unknown-bg: rgba(148, 163, 184, 0.08);
+    --unknown-edge: #94a3b8;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+}
+.top-bar {
+  background: var(--dashboard-panel-bg);
+  color: var(--dashboard-text);
+  padding: 0;
+  box-shadow: 0 1px 0 rgba(148, 163, 184, 0.18);
+  border-bottom: 3px solid var(--accent);
+}
+.top-bar-inner {
+  padding: 1.4rem 1.25rem 1.55rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+.brand-mark {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: var(--radius-sm);
+  background: var(--dashboard-badge-bg);
+  border: 1px solid var(--dashboard-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+.brand-mark .ico { stroke: var(--accent); }
+.brand-copy h1 {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--dashboard-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.tagline {
+  margin: 0.35rem 0 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.top-bar .tagline {
+  color: var(--dashboard-muted);
+}
+.shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+.panel {
+  background: var(--dashboard-panel-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--dashboard-border);
+  box-shadow: var(--dashboard-shadow);
+  padding: 1.15rem 1.3rem;
+  margin-bottom: 1.35rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.panel:hover {
+  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.1);
+  border-color: rgba(59, 130, 246, 0.28);
+}
+.panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: var(--dashboard-text);
+  letter-spacing: -0.02em;
+  border-bottom: 2px solid var(--dashboard-border);
+  padding-bottom: 0.55rem;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.panel-bk h2 {
+  border-bottom-color: var(--ci-soft);
+}
+.heading-row {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+.heading-ico {
+  display: flex;
+  margin-top: 0.12rem;
+  color: var(--accent);
+}
+.panel-bk .heading-ico {
+  color: var(--ci);
+}
+.heading-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+.heading-sub {
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--muted);
+}
+h3.panel-sub {
+  margin: 1.2rem 0 0.65rem;
+  font-size: 1.04rem;
+  color: var(--dashboard-soft-text);
+  font-weight: 700;
+}
+h3.panel-sub:first-child {
+  margin-top: 0;
+}
+h3.panel-sub .heading-ico {
+  color: var(--dashboard-muted);
+}
+h3.section-failures {
+  margin: 0 0 0.85rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--danger-strong);
+}
+h3.section-failures .heading-ico {
+  color: var(--danger);
+}
+section.job-fail-bk h3.section-failures .heading-ico {
+  color: var(--ci);
+}
+.panel-fail-analysis {
+  border-top: 3px solid var(--dashboard-warning);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dashboard-warning-bg) 65%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-bg) 42%);
+}
+.panel-fail-analysis > h2 {
+  border-bottom-color: color-mix(in srgb, var(--dashboard-warning) 35%, transparent);
+}
+.panel-fail-analysis .heading-ico {
+  color: var(--dashboard-warning);
+}
+.panel-perf-manual {
+  border-top: 3px solid var(--dashboard-violet);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dashboard-violet-bg) 55%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-bg) 45%);
+}
+.panel-perf-manual > h2 {
+  border-bottom-color: color-mix(in srgb, var(--dashboard-violet) 30%, transparent);
+}
+.panel-perf-manual .heading-ico {
+  color: var(--dashboard-violet);
+}
+h3.perf-sheet-title {
+  margin: 1.25rem 0 0.55rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--dashboard-violet);
+}
+h3.perf-sheet-title:first-of-type {
+  margin-top: 0.35rem;
+}
+.perf-truncate-hint {
+  margin: 0 0 0.5rem !important;
+}
+table.perf-manual {
+  font-size: 0.86rem;
+}
+table.perf-manual th {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dashboard-violet-bg) 85%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-strong));
+  color: var(--dashboard-text);
+}
+table.perf-manual td {
+  background: color-mix(in srgb, var(--dashboard-panel-bg) 96%, var(--dashboard-badge-bg));
+}
+.perf-delta {
+  font-size: 0.78em;
+  font-weight: 750;
+  margin-left: 0.35rem;
+  white-space: nowrap;
+}
+.perf-delta--up {
+  color: var(--dashboard-warning);
+}
+.perf-delta--down {
+  color: var(--dashboard-healthy);
+}
+details.job-fail-details {
+  margin-bottom: 1.25rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--danger-edge);
+  background: var(--surface);
+}
+details.job-fail-details:last-child {
+  margin-bottom: 0;
+}
+summary.job-fail-details-summary {
+  list-style: none;
+  cursor: pointer;
+  background: var(--danger-bg);
+  padding: 1.05rem 1.1rem 1.05rem 2.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--dashboard-warning) 38%, transparent);
+  position: relative;
+}
+summary.job-fail-details-summary::-webkit-details-marker {
+  display: none;
+}
+summary.job-fail-details-summary::before {
+  content: "▸";
+  position: absolute;
+  left: 0.95rem;
+  top: 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--danger-strong);
+  line-height: 1;
+  pointer-events: none;
+}
+details.job-fail-details[open] > summary.job-fail-details-summary::before {
+  content: "▾";
+}
+summary.job-fail-details-summary h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 750;
+  color: var(--danger-strong);
+}
+summary.job-fail-details-summary .heading-ico {
+  color: var(--danger-strong);
+}
+summary.job-fail-details-summary .meta {
+  margin: 0.5rem 0 0;
+}
+.job-fail-details-body {
+  padding: 1.1rem 1.35rem 1.35rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dashboard-alert-bg) 40%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-bg) 48%);
+}
+.full-log-wrap {
+  margin: 0.55rem 0 0;
+  padding-top: 0.4rem;
+  border-top: 1px dashed color-mix(in srgb, var(--dashboard-warning) 42%, transparent);
+}
+.btn-view-full-log {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.88rem;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--dashboard-warning) 45%, var(--dashboard-border));
+  background: linear-gradient(180deg, var(--dashboard-panel-bg) 0%, color-mix(in srgb, var(--dashboard-warning-bg) 55%, var(--dashboard-panel-bg)) 100%);
+  color: var(--danger-strong);
+  font-size: 0.86rem;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--dashboard-warning) 12%, transparent);
+}
+.btn-view-full-log:hover {
+  border-color: var(--dashboard-warning);
+  background: var(--dashboard-panel-bg);
+}
+.full-log-panel {
+  margin-top: 0.65rem;
+}
+pre.log-full {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(180deg, var(--code-bg-top) 0%, var(--code-bg-bottom) 100%);
+  color: var(--code-fg);
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--dashboard-muted) 38%, transparent);
+  font-size: 0.78rem;
+  line-height: 1.48;
+  max-height: min(75vh, 42rem);
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+ul.full-log-paths {
+  margin: 0.35rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+.full-log-oversize {
+  margin: 0;
+}
+summary.job-fail-details-summary-bk {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ci-soft) 65%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-strong));
+  border-bottom-color: color-mix(in srgb, var(--ci) 42%, transparent);
+}
+summary.job-fail-details-summary-bk::before {
+  color: var(--ci);
+}
+details.job-fail-details-bk {
+  border-left-color: var(--ci);
+}
+summary.job-fail-details-summary-bk h2 {
+  color: var(--dashboard-chart-text);
+}
+summary.job-fail-details-summary-bk .heading-ico {
+  color: var(--ci);
+}
+.meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.4rem 0;
+}
+.meta strong {
+  color: var(--dashboard-badge-text);
+  font-weight: 650;
+}
+.meta a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-soft);
+}
+.meta a:hover {
+  color: var(--accent-hover);
+  border-bottom-color: var(--accent);
+}
+.hint {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0.55rem 0 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+.hint::before {
+  content: "→";
+  color: var(--accent);
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 0.08rem;
+}
+p.summary-legend {
+  margin: 0.35rem 0 0;
+  font-size: 0.84rem;
+}
+.summary-legend strong.summary-legend--ok { color: var(--dashboard-healthy); }
+.summary-legend strong.summary-legend--fail { color: var(--dashboard-alert); }
+.summary-legend strong.summary-legend--unk { color: var(--omni-baseline-line); }
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-sm);
+  margin: 0.65rem 0 0;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--dashboard-panel-bg) 65%, transparent);
+}
+.table-scroll > table {
+  width: 100%;
+  min-width: 620px;
+}
+table.summary {
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+table.summary th, table.summary td {
+  border: 1px solid var(--border);
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+table.summary th {
+  background: var(--dashboard-panel-strong);
+  font-weight: 650;
+  color: var(--dashboard-chart-text);
+  white-space: nowrap;
+}
+table.summary tbody tr.summary-row--ok td {
+  background: color-mix(in srgb, var(--dashboard-healthy-bg) 92%, var(--dashboard-panel-bg));
+}
+table.summary tbody tr.summary-row--ok td:first-child {
+  border-left: 4px solid var(--ok-edge);
+  padding-left: calc(0.8rem - 3px);
+  font-weight: 650;
+  color: var(--dashboard-healthy);
+}
+table.summary tbody tr.summary-row--fail td {
+  background: color-mix(in srgb, var(--dashboard-alert-bg) 88%, var(--dashboard-panel-bg));
+}
+table.summary tbody tr.summary-row--fail td:first-child {
+  border-left: 4px solid var(--fail-edge);
+  padding-left: calc(0.8rem - 3px);
+  font-weight: 650;
+  color: var(--danger-strong);
+}
+table.summary tbody tr.summary-row--unknown td {
+  background: var(--unknown-bg);
+}
+table.summary tbody tr.summary-row--unknown td:first-child {
+  border-left: 4px solid var(--unknown-edge);
+  padding-left: calc(0.8rem - 3px);
+  color: var(--dashboard-chart-text);
+}
+table.summary tbody tr.summary-row--ok:hover td {
+  background: color-mix(in srgb, var(--dashboard-healthy-bg) 98%, var(--dashboard-panel-bg));
+}
+table.summary tbody tr.summary-row--fail:hover td {
+  background: color-mix(in srgb, var(--dashboard-alert-bg) 95%, var(--dashboard-panel-bg));
+}
+table.summary tbody tr.summary-row--unknown:hover td {
+  background: var(--dashboard-badge-bg);
+}
+section.job-fail {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border-left: 4px solid var(--danger-edge);
+}
+section.job-fail header {
+  background: var(--danger-bg);
+  padding: 1.05rem 1.35rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--dashboard-warning) 38%, transparent);
+}
+section.job-fail header .heading-ico {
+  color: var(--danger-strong);
+}
+section.job-fail h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 750;
+  color: var(--danger-strong);
+}
+section.job-fail .body {
+  padding: 1.1rem 1.35rem 1.35rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dashboard-alert-bg) 35%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-bg) 48%);
+}
+table.fail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+table.fail-table th, table.fail-table td {
+  border: 1px solid var(--border);
+  padding: 0.72rem 0.8rem;
+  vertical-align: top;
+}
+table.fail-table th {
+  background: var(--dashboard-panel-strong);
+  font-weight: 650;
+  text-align: left;
+  color: var(--dashboard-text);
+}
+.th-lbl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.th-ico {
+  flex-shrink: 0;
+  opacity: 0.88;
+  color: var(--dashboard-chart-text);
+}
+table.fail-table tr.row-error {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--dashboard-warning-bg) 70%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-bg) 100%);
+}
+td.mono {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.84rem;
+  word-break: break-all;
+}
+td.reason {
+  color: var(--dashboard-text);
+}
+td.analysis {
+  color: var(--dashboard-healthy);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dashboard-healthy-bg) 55%, var(--dashboard-panel-bg)) 0%, color-mix(in srgb, var(--dashboard-healthy-bg) 88%, var(--dashboard-panel-bg)) 100%);
+  font-size: 0.86rem;
+  border-left: 3px solid var(--dashboard-healthy) !important;
+}
+td.excerpt-cell {
+  padding: 0.5rem !important;
+  background: var(--surface-muted);
+}
+pre.log-excerpt {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(180deg, var(--code-bg-top) 0%, var(--code-bg-bottom) 100%);
+  color: var(--code-fg);
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--dashboard-muted) 38%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--dashboard-panel-bg) 18%, transparent);
+  font-size: 0.78rem;
+  line-height: 1.48;
+  max-height: 28rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.note {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 0.35rem;
+}
+.panel-bk {
+  border-top: 4px solid var(--ci);
+  background: linear-gradient(180deg, var(--dashboard-panel-bg) 0%, color-mix(in srgb, var(--ci-soft) 35%, var(--dashboard-panel-bg)) 100%);
+}
+section.job-fail-bk {
+  border-left-color: var(--ci);
+}
+section.job-fail-bk header {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ci-soft) 55%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-strong));
+  border-bottom: 1px solid color-mix(in srgb, var(--ci) 38%, transparent);
+}
+section.job-fail-bk header .heading-ico {
+  color: var(--ci);
+}
+section.job-fail-bk h2 {
+  color: var(--dashboard-chart-text);
+  font-weight: 750;
+}
+.issue-action-cell {
+  width: 7.5rem;
+  text-align: center;
+  vertical-align: middle !important;
+  background: var(--surface-muted);
+}
+.btn-github-issue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--dashboard-panel-strong);
+  color: var(--dashboard-text);
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--dashboard-shadow) 25%, transparent);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.btn-github-issue:hover {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-tint) 90%, var(--dashboard-panel-bg)) 0%, var(--dashboard-panel-strong));
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--dashboard-border));
+  color: var(--accent-hover);
+}
+.btn-github-issue:active { transform: scale(0.98); }
+.btn-issue-ico { stroke: var(--accent); }
+.btn-issue-text { white-space: nowrap; }
+.gh-modal[hidden] { display: none !important; }
+.gh-modal:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 99990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.gh-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--dashboard-tooltip-bg) 55%, transparent);
+  backdrop-filter: blur(3px);
+}
+.gh-modal-panel {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  width: 100%;
+  max-height: min(92vh, 920px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--dashboard-shadow);
+  overflow: hidden;
+}
+.gh-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  background: var(--dashboard-panel-strong);
+  border-bottom: 1px solid var(--border);
+}
+.gh-modal-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 750;
+  color: var(--dashboard-text);
+}
+.gh-modal-x {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0 0.25rem;
+}
+.gh-modal-x:hover { color: var(--danger-strong); }
+.gh-modal-hint {
+  margin: 0;
+  padding: 0.85rem 1.15rem 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.gh-modal-hint a { color: var(--accent); font-weight: 600; }
+.gh-issue-textarea {
+  margin: 0.75rem 1.15rem;
+  flex: 1;
+  min-height: 200px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  resize: vertical;
+  color: var(--dashboard-text);
+  background: color-mix(in srgb, var(--dashboard-badge-bg) 40%, var(--dashboard-panel-bg));
+}
+.gh-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding: 0.85rem 1.15rem 1.1rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.btn-gh-copy {
+  padding: 0.5rem 1rem;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--dashboard-panel-bg);
+  font-weight: 650;
+  cursor: pointer;
+  color: var(--dashboard-soft-text);
+}
+.btn-gh-copy:hover { border-color: var(--dashboard-border-strong); }
+.btn-gh-open {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--dashboard-tooltip-text) !important;
+  font-weight: 700;
+  text-decoration: none !important;
+  border: 1px solid var(--accent-hover);
+  box-shadow: none;
+}
+.btn-gh-open:hover { background: var(--accent-hover); filter: none; }
+/* Nightly report: Buildkite Test / Local Test outer cards + collapsible subcards */
+.nightly-root.panel {
+  margin-bottom: 1.35rem;
+}
+.nightly-root--buildkite {
+  border-top: 4px solid var(--ci);
+  background: linear-gradient(180deg, var(--dashboard-panel-bg) 0%, color-mix(in srgb, var(--ci-soft) 28%, var(--dashboard-panel-bg)) 100%);
+}
+.nightly-root--local {
+  border-top: 4px solid var(--accent);
+  background: linear-gradient(180deg, var(--dashboard-panel-bg) 0%, color-mix(in srgb, var(--accent-tint) 70%, var(--dashboard-panel-bg)) 100%);
+}
+details.report-subcard {
+  margin-bottom: 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--dashboard-border);
+  background: var(--dashboard-panel-bg);
+  box-shadow: var(--dashboard-shadow);
+  overflow: hidden;
+}
+details.report-subcard:last-child {
+  margin-bottom: 0;
+}
+summary.report-subcard-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.78rem 1rem 0.78rem 2.45rem;
+  position: relative;
+  font-weight: 780;
+  font-size: 1.02rem;
+  color: var(--dashboard-text);
+  background: linear-gradient(180deg, var(--dashboard-panel-strong) 0%, var(--dashboard-panel-bg) 100%);
+  border-bottom: 1px solid var(--dashboard-border);
+}
+.report-subcard-summary-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.report-subcard-summary-inner .report-subcard-ico {
+  flex-shrink: 0;
+  opacity: 0.92;
+}
+.report-subcard-title {
+  font-weight: inherit;
+}
+.report-subcard-summary .report-subcard-ico {
+  color: var(--accent);
+}
+.report-subcard--bk .report-subcard-summary .report-subcard-ico {
+  color: var(--ci);
+}
+.report-subcard--bk-fail .report-subcard-summary .report-subcard-ico {
+  color: var(--dashboard-warning);
+}
+.report-subcard--perf .report-subcard-summary .report-subcard-ico {
+  color: var(--dashboard-violet);
+}
+.report-subcard--bk-perf .report-subcard-summary .report-subcard-ico,
+.report-subcard--bk-perf-model .report-subcard-summary .report-subcard-ico {
+  color: var(--ci);
+}
+.report-subcard--local-fail .report-subcard-summary .report-subcard-ico {
+  color: var(--danger-strong);
+}
+summary.report-subcard-summary::-webkit-details-marker {
+  display: none;
+}
+summary.report-subcard-summary::before {
+  content: "▸";
+  position: absolute;
+  left: 0.88rem;
+  top: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  pointer-events: none;
+}
+details.report-subcard[open] > summary.report-subcard-summary::before {
+  content: "▾";
+}
+.report-subcard--bk summary.report-subcard-summary::before {
+  color: var(--ci);
+}
+.report-subcard--bk-fail summary.report-subcard-summary::before {
+  color: var(--dashboard-warning);
+}
+.report-subcard--perf summary.report-subcard-summary::before {
+  color: var(--dashboard-violet);
+}
+.report-subcard--bk-perf summary.report-subcard-summary::before,
+.report-subcard--bk-perf-model summary.report-subcard-summary::before {
+  color: var(--ci);
+}
+.report-subcard--local-fail summary.report-subcard-summary::before {
+  color: var(--danger-strong);
+}
+.report-subcard-body {
+  padding: 1rem 1.2rem 1.2rem;
+  background: var(--dashboard-panel-bg);
+}
+.report-subcard-body > .table-scroll:first-child {
+  margin-top: 0;
+}
+.local-summary-pillar-body {
+  padding: 0.35rem 0.15rem 0.65rem;
+}
+details.local-summary-pillar {
+  margin-bottom: 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--dashboard-border);
+  background: color-mix(in srgb, var(--dashboard-panel-bg) 90%, var(--accent) 10%);
+}
+details.local-summary-pillar:last-child {
+  margin-bottom: 0;
+}
+summary.local-summary-pillar-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.55rem 0.85rem 0.55rem 2rem;
+  position: relative;
+  font-weight: 750;
+  font-size: 0.98rem;
+  color: var(--dashboard-text);
+  background: var(--dashboard-panel-strong);
+  border-bottom: 1px solid var(--dashboard-border);
+}
+summary.local-summary-pillar-summary::-webkit-details-marker {
+  display: none;
+}
+summary.local-summary-pillar-summary::before {
+  content: "▸";
+  position: absolute;
+  left: 0.52rem;
+  top: 0.62rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  pointer-events: none;
+}
+details.local-summary-pillar[open] > summary.local-summary-pillar-summary::before {
+  content: "▾";
+}
+details.local-summary-dim {
+  margin: 0.5rem 0.35rem 0.45rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed color-mix(in srgb, var(--dashboard-border) 82%, var(--accent) 18%);
+  background: var(--dashboard-panel-bg);
+}
+summary.local-summary-dim-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.42rem 0.75rem 0.42rem 1.85rem;
+  position: relative;
+  font-weight: 680;
+  font-size: 0.9rem;
+  color: var(--dashboard-muted);
+  background: color-mix(in srgb, var(--dashboard-panel-bg) 96%, var(--accent) 4%);
+  border-bottom: 1px solid var(--dashboard-border);
+}
+summary.local-summary-dim-summary::-webkit-details-marker {
+  display: none;
+}
+summary.local-summary-dim-summary::before {
+  content: "▸";
+  position: absolute;
+  left: 0.45rem;
+  top: 0.48rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  pointer-events: none;
+}
+details.local-summary-dim[open] > summary.local-summary-dim-summary::before {
+  content: "▾";
+}
+.local-summary-dim-body {
+  padding: 0.55rem 0.45rem 0.65rem;
+}
+.local-summary-dim-body > .table-scroll:first-child {
+  margin-top: 0;
+}
+.report-subcard--bk-perf-model {
+  background: color-mix(in srgb, var(--dashboard-panel-bg) 94%, var(--ci-soft) 6%);
+}
+.perf-filter-scope {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.perf-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--dashboard-border) 82%, var(--ci) 18%);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--dashboard-panel-strong) 88%, var(--ci-soft) 12%);
+}
+.perf-filter-label {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 10rem;
+  font-size: 0.78rem;
+  font-weight: 720;
+  color: var(--dashboard-muted);
+}
+.perf-filter-select {
+  min-height: 2rem;
+  max-width: min(22rem, 70vw);
+  padding: 0.35rem 2rem 0.35rem 0.55rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.55rem;
+  background: var(--dashboard-panel-bg);
+  color: var(--dashboard-text);
+  font: inherit;
+}
+.perf-filter-select:focus {
+  outline: 2px solid color-mix(in srgb, var(--ci) 45%, transparent);
+  outline-offset: 2px;
+}
+.perf-filter-table td,
+.perf-filter-table th {
+  white-space: nowrap;
+}
+.perf-filter-empty {
+  margin: 0;
+}
+.ico {
+  display: block;
+}
+
+</style>
+</head>
+<body>
+<div class="top-bar"><div class="shell top-bar-inner"><div class="brand"><div class="brand-mark"><svg class="ico brand-ico" width="30" height="30" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><div class="brand-copy"><h1>Nightly Buildkite report - 2026-06-18</h1><p class="tagline">Nightly test report</p></div></div></div></div>
+<div class="shell">
+<section class="panel nightly-root nightly-root--buildkite">
+<h2><span class="heading-row"><span class="heading-ico"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 22h9a5 5 0 1 0 0-12z"/></svg></span><span class="heading-text"><span class="heading-label">Buildkite Test</span><span class="heading-sub">Latest scheduled nightly (main)</span></span></span></h2>
+<details class="report-subcard report-subcard--bk"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Summary（各 Job 执行情况）</span></span></summary><div class="report-subcard-body"><div class="meta"><div><strong>Build:</strong> <a href="https://buildkite.com/vllm/vllm-omni/builds/11537">#11537</a></div><div><strong>State:</strong> failed</div><div><strong>Message:</strong> Scheduled nightly build</div><div><strong>Commit:</strong> d744940b181c</div></div>
+<div class="table-scroll"><table class="summary">
+<thead><tr>
+<th>Job</th>
+<th>Total</th>
+<th>Passed</th>
+<th>Failed</th>
+<th>Skipped</th>
+<th>Errors</th>
+<th>执行时间</th>
+</tr></thead><tbody>
+<tr class="summary-row summary-row--unknown">
+<td>:bar_chart: Testcase Statistics</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>—</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Accuracy Test</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>221.30s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Doc Test</td>
+<td>17</td>
+<td>14</td>
+<td>0</td>
+<td>3</td>
+<td>0</td>
+<td>2031.48s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Function Test with H100 · Multi-GPU Bagel</td>
+<td>5</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1286.70s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Function Test with H100 · Multi-GPU DreamZero</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>94.88s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Function Test with H100 · Multi-GPU Layered/LongCat/FLUX</td>
+<td>10</td>
+<td>10</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1966.86s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Function Test with H100 · Multi-GPU Qwen-Image</td>
+<td>25</td>
+<td>25</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2518.41s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Function Test with H100 · Single-GPU</td>
+<td>25</td>
+<td>25</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>4581.06s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Function Test with L4</td>
+<td>21</td>
+<td>18</td>
+<td>0</td>
+<td>3</td>
+<td>0</td>
+<td>2569.50s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · GLM-Image Function Test with H100</td>
+<td>10</td>
+<td>10</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1056.88s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Perf Test · BAGEL</td>
+<td>4</td>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>977.59s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Perf Test · Qwen-Image</td>
+<td>10</td>
+<td>8</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td>1810.49s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Perf Test · Qwen-Image-Edit</td>
+<td>6</td>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1283.12s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Perf Test · Qwen-Image-Edit-2511</td>
+<td>6</td>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1461.43s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2I(&amp;A&amp;T) · Perf Test · Qwen-Image-Layered</td>
+<td>2</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>540.95s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2V · Accuracy Test</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>350.55s</td>
+</tr>
+<tr class="summary-row summary-row--unknown">
+<td>:full_moon: Diffusion X2V · Function Test</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>—</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Diffusion X2V · Perf Test</td>
+<td>4</td>
+<td>3</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1778.37s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: HunyuanImage3-DIT · Accuracy Test</td>
+<td>2</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>433.10s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Accuracy Test</td>
+<td>2</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1791.25s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Doc Test with H100</td>
+<td>7</td>
+<td>7</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>545.32s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Doc Test with L4</td>
+<td>7</td>
+<td>7</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>653.09s</td>
+</tr>
+<tr class="summary-row summary-row--fail">
+<td>:full_moon: Omni · Function Test with H100</td>
+<td>58</td>
+<td>41</td>
+<td>2</td>
+<td>15</td>
+<td>0</td>
+<td>3217.94s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Function Test with L4</td>
+<td>4</td>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>728.21s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Multi-Replica Startup Test with 4x H100</td>
+<td>3</td>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>321.26s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Perf Test · Async Chunk</td>
+<td>8</td>
+<td>8</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2951.43s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Perf Test · Multi-Replica</td>
+<td>4</td>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2535.73s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Perf Test · No Async Chunk</td>
+<td>4</td>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2233.29s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Omni · Perf Test · vLLM Text</td>
+<td>4</td>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>956.44s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Quantization Test with H100</td>
+<td>9</td>
+<td>6</td>
+<td>0</td>
+<td>3</td>
+<td>0</td>
+<td>1327.56s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: Quantization Test with L4</td>
+<td>6</td>
+<td>6</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1687.15s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: TTS · Accuracy Test · VoxCPM2</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>289.12s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: TTS · Function Test with L4</td>
+<td>28</td>
+<td>28</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>3984.07s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: TTS · Higgs-Audio-V3 · Perf Test</td>
+<td>2</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>338.23s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: TTS · Perf Test</td>
+<td>33</td>
+<td>11</td>
+<td>0</td>
+<td>22</td>
+<td>0</td>
+<td>1167.81s</td>
+</tr>
+<tr class="summary-row summary-row--ok">
+<td>:full_moon: TTS · VoxCPM2 · Perf Test</td>
+<td>5</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>406.73s</td>
+</tr>
+<tr class="summary-row summary-row--unknown">
+<td>:github: Resolve skip-ci (docs / skip marks) &amp; upload pipeline</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>—</td>
+</tr>
+</tbody></table></div></div></details>
+<details class="report-subcard report-subcard--bk-perf"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="report-subcard-title">性能基线对比</span></span></summary><div class="report-subcard-body"><p class="meta"><strong>数据源:</strong> <code>D:\Files\Projects\GitHub\remote\vllm-omni-kanban\docs\assets\charts</code></p>
+<p class="meta"><strong>History:</strong> 11 files, 139 groups, selection=groups, generated_at=<code>2026-06-18T08:07:43.654767</code></p>
+<p class="hint">仅展示最新一天（2026-06-17）且包含 baseline 的模型记录。</p>
+<p class="meta"><strong>统计:</strong> pass=71, fail=186, n/a=0</p>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">ByteDance-Seed/BAGEL-7B-MoT (12 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-0">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="test_bagel_single_device_multi_stage_i2i">test_bagel_single_device_multi_stage_i2i</option><option value="test_bagel_single_device_multi_stage_t2i">test_bagel_single_device_multi_stage_t2i</option><option value="test_bagel_single_device_single_stage_i2i">test_bagel_single_device_single_stage_i2i</option><option value="test_bagel_single_device_single_stage_t2i">test_bagel_single_device_single_stage_t2i</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="e2e_latency_ms">e2e_latency_ms</option><option value="peak_memory_gb">peak_memory_gb</option><option value="throughput_qps">throughput_qps</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option><option value="pass">pass</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="test_bagel_single_device_multi_stage_i2i" data-metric="e2e_latency_ms" data-status="pass">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_multi_stage_i2i</td>
+<td>e2e_latency_ms</td>
+<td>7183.5937</td>
+<td>7339</td>
+<td>+2.12%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_multi_stage_i2i" data-metric="peak_memory_gb" data-status="pass">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_multi_stage_i2i</td>
+<td>peak_memory_gb</td>
+<td>28.9961</td>
+<td>32.5402</td>
+<td>+10.89%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_multi_stage_i2i" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_multi_stage_i2i</td>
+<td>throughput_qps</td>
+<td>0.1392</td>
+<td>0.1349</td>
+<td>+3.19%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_multi_stage_t2i" data-metric="e2e_latency_ms" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_multi_stage_t2i</td>
+<td>e2e_latency_ms</td>
+<td>2982.8821</td>
+<td>2642.5</td>
+<td>-12.88%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_multi_stage_t2i" data-metric="peak_memory_gb" data-status="pass">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_multi_stage_t2i</td>
+<td>peak_memory_gb</td>
+<td>28.7441</td>
+<td>32.3018</td>
+<td>+11.01%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_multi_stage_t2i" data-metric="throughput_qps" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_multi_stage_t2i</td>
+<td>throughput_qps</td>
+<td>0.3352</td>
+<td>0.3746</td>
+<td>-10.51%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_single_stage_i2i" data-metric="e2e_latency_ms" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_single_stage_i2i</td>
+<td>e2e_latency_ms</td>
+<td>3515.4488</td>
+<td>3168.6</td>
+<td>-10.95%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_single_stage_i2i" data-metric="peak_memory_gb" data-status="pass">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_single_stage_i2i</td>
+<td>peak_memory_gb</td>
+<td>29.2832</td>
+<td>32.6638</td>
+<td>+10.35%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_single_stage_i2i" data-metric="throughput_qps" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_single_stage_i2i</td>
+<td>throughput_qps</td>
+<td>0.2844</td>
+<td>0.3124</td>
+<td>-8.95%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_single_stage_t2i" data-metric="e2e_latency_ms" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_single_stage_t2i</td>
+<td>e2e_latency_ms</td>
+<td>3104.4127</td>
+<td>2691</td>
+<td>-15.36%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_single_stage_t2i" data-metric="peak_memory_gb" data-status="pass">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_single_stage_t2i</td>
+<td>peak_memory_gb</td>
+<td>28.7061</td>
+<td>32.3071</td>
+<td>+11.15%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_bagel_single_device_single_stage_t2i" data-metric="throughput_qps" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>test_bagel_single_device_single_stage_t2i</td>
+<td>throughput_qps</td>
+<td>0.3221</td>
+<td>0.3678</td>
+<td>-12.43%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Qwen/Qwen-Image (33 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-1">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="test_qwen_image_single_device">test_qwen_image_single_device</option><option value="test_qwen_image_single_device_step_execution">test_qwen_image_single_device_step_execution</option><option value="test_qwen_image_single_device_step_execution_high_concurrency">test_qwen_image_single_device_step_execution_high_concurrency</option><option value="test_qwen_image_ulysses2_cfg2_cache_dit">test_qwen_image_ulysses2_cfg2_cache_dit</option><option value="test_qwen_image_ulysses2_cfg2_vae_patch4">test_qwen_image_ulysses2_cfg2_vae_patch4</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="e2e_latency_ms">e2e_latency_ms</option><option value="peak_memory_gb">peak_memory_gb</option><option value="throughput_qps">throughput_qps</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option><option value="pass">pass</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device</td>
+<td>e2e_latency_ms</td>
+<td>24872.9301</td>
+<td>23599.1</td>
+<td>-5.40%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device</td>
+<td>peak_memory_gb</td>
+<td>63.0762</td>
+<td>59.9224</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device</td>
+<td>throughput_qps</td>
+<td>0.0402</td>
+<td>0.0423</td>
+<td>-4.96%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device</td>
+<td>e2e_latency_ms</td>
+<td>2454.1096</td>
+<td>2406.5</td>
+<td>-1.98%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device</td>
+<td>peak_memory_gb</td>
+<td>53.752</td>
+<td>51.0644</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device</td>
+<td>throughput_qps</td>
+<td>0.4075</td>
+<td>0.4153</td>
+<td>-1.89%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device_step_execution</td>
+<td>e2e_latency_ms</td>
+<td>24786.4359</td>
+<td>23576.8</td>
+<td>-5.13%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution" data-metric="peak_memory_gb" data-status="pass">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device_step_execution</td>
+<td>peak_memory_gb</td>
+<td>0</td>
+<td>63.4766</td>
+<td>+100.00%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device_step_execution</td>
+<td>throughput_qps</td>
+<td>0.0403</td>
+<td>0.0423</td>
+<td>-4.62%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device_step_execution</td>
+<td>e2e_latency_ms</td>
+<td>2434.4619</td>
+<td>2395.3</td>
+<td>-1.63%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution" data-metric="peak_memory_gb" data-status="pass">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device_step_execution</td>
+<td>peak_memory_gb</td>
+<td>0</td>
+<td>54.6875</td>
+<td>+100.00%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_single_device_step_execution</td>
+<td>throughput_qps</td>
+<td>0.4107</td>
+<td>0.4175</td>
+<td>-1.62%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="e2e_latency_ms" data-status="pass">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=1, n=20</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>e2e_latency_ms</td>
+<td>2401.345</td>
+<td>2421.5</td>
+<td>+0.83%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="peak_memory_gb" data-status="pass">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=1, n=20</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>peak_memory_gb</td>
+<td>0</td>
+<td>65.4297</td>
+<td>+100.00%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="throughput_qps" data-status="pass">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=1, n=20</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>throughput_qps</td>
+<td>0.4164</td>
+<td>0.4125</td>
+<td>+0.95%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=2, n=40</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>e2e_latency_ms</td>
+<td>3003.1659</td>
+<td>2992</td>
+<td>-0.37%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="peak_memory_gb" data-status="pass">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=2, n=40</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>peak_memory_gb</td>
+<td>0</td>
+<td>65.4297</td>
+<td>+100.00%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=2, n=40</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>throughput_qps</td>
+<td>0.6652</td>
+<td>0.6714</td>
+<td>-0.93%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=4, n=80</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>e2e_latency_ms</td>
+<td>6362.6333</td>
+<td>5929.3</td>
+<td>-7.31%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="peak_memory_gb" data-status="pass">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=4, n=80</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>peak_memory_gb</td>
+<td>0</td>
+<td>65.4297</td>
+<td>+100.00%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=4, n=80</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>throughput_qps</td>
+<td>0.6212</td>
+<td>0.6674</td>
+<td>-6.92%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=8, n=160</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>e2e_latency_ms</td>
+<td>10251.0602</td>
+<td>9656</td>
+<td>-6.16%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="peak_memory_gb" data-status="pass">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=8, n=160</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>peak_memory_gb</td>
+<td>0</td>
+<td>65.4297</td>
+<td>+100.00%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_single_device_step_execution_high_concurrency" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20_high_concurrency, data=random, c=8, n=160</td>
+<td>test_qwen_image_single_device_step_execution_high_concurrency</td>
+<td>throughput_qps</td>
+<td>0.7712</td>
+<td>0.8159</td>
+<td>-5.48%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_cache_dit" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_cache_dit</td>
+<td>e2e_latency_ms</td>
+<td>5417.4959</td>
+<td>5202.2</td>
+<td>-4.14%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_cache_dit" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_cache_dit</td>
+<td>peak_memory_gb</td>
+<td>63.1875</td>
+<td>60.0281</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_cache_dit" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_cache_dit</td>
+<td>throughput_qps</td>
+<td>0.1846</td>
+<td>0.1918</td>
+<td>-3.76%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_cache_dit" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_cache_dit</td>
+<td>e2e_latency_ms</td>
+<td>2146.3745</td>
+<td>1794</td>
+<td>-19.64%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_cache_dit" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_cache_dit</td>
+<td>peak_memory_gb</td>
+<td>53.8631</td>
+<td>51.1696</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_cache_dit" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=512x512_steps20, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_cache_dit</td>
+<td>throughput_qps</td>
+<td>0.4659</td>
+<td>0.559</td>
+<td>-16.66%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_vae_patch4" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_vae_patch4</td>
+<td>e2e_latency_ms</td>
+<td>8492.8682</td>
+<td>8221.1</td>
+<td>-3.31%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_vae_patch4" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_vae_patch4</td>
+<td>peak_memory_gb</td>
+<td>53.1504</td>
+<td>50.4929</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_ulysses2_cfg2_vae_patch4" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image</td>
+<td>bench=1536x1536_steps35, data=random, c=1, n=10</td>
+<td>test_qwen_image_ulysses2_cfg2_vae_patch4</td>
+<td>throughput_qps</td>
+<td>0.1177</td>
+<td>0.1214</td>
+<td>-3.01%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Qwen/Qwen-Image-Edit (15 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-2">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="test_qwen_image_edit_single_device">test_qwen_image_edit_single_device</option><option value="test_qwen_image_edit_ulysses2_cfg2_cache_dit">test_qwen_image_edit_ulysses2_cfg2_cache_dit</option><option value="test_qwen_image_edit_ulysses2_cfg2_vae_patch4">test_qwen_image_edit_ulysses2_cfg2_vae_patch4</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="e2e_latency_ms">e2e_latency_ms</option><option value="peak_memory_gb">peak_memory_gb</option><option value="throughput_qps">throughput_qps</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_single_device</td>
+<td>e2e_latency_ms</td>
+<td>43542.7046</td>
+<td>41568.6</td>
+<td>-4.75%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_single_device</td>
+<td>peak_memory_gb</td>
+<td>64.8145</td>
+<td>61.2917</td>
+<td>-5.75%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_single_device" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_single_device</td>
+<td>throughput_qps</td>
+<td>0.023</td>
+<td>0.024</td>
+<td>-4.31%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_single_device</td>
+<td>e2e_latency_ms</td>
+<td>9259.255</td>
+<td>8835.2</td>
+<td>-4.80%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_single_device</td>
+<td>peak_memory_gb</td>
+<td>57.2012</td>
+<td>54.0591</td>
+<td>-5.81%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_single_device" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_single_device</td>
+<td>throughput_qps</td>
+<td>0.108</td>
+<td>0.1129</td>
+<td>-4.34%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_cache_dit" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_cache_dit</td>
+<td>e2e_latency_ms</td>
+<td>9584.696</td>
+<td>8965.6</td>
+<td>-6.91%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_cache_dit" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_cache_dit</td>
+<td>peak_memory_gb</td>
+<td>65.8379</td>
+<td>62.264</td>
+<td>-5.74%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_cache_dit" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_cache_dit</td>
+<td>throughput_qps</td>
+<td>0.1043</td>
+<td>0.1113</td>
+<td>-6.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_cache_dit" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_cache_dit</td>
+<td>e2e_latency_ms</td>
+<td>3699.9889</td>
+<td>3470.1</td>
+<td>-6.62%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_cache_dit" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_cache_dit</td>
+<td>peak_memory_gb</td>
+<td>57.375</td>
+<td>54.2242</td>
+<td>-5.81%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_cache_dit" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_cache_dit</td>
+<td>throughput_qps</td>
+<td>0.2703</td>
+<td>0.2879</td>
+<td>-6.13%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_vae_patch4" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_vae_patch4</td>
+<td>e2e_latency_ms</td>
+<td>15727.6431</td>
+<td>14851.7</td>
+<td>-5.90%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_vae_patch4" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_vae_patch4</td>
+<td>peak_memory_gb</td>
+<td>55.7363</td>
+<td>52.6675</td>
+<td>-5.83%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_ulysses2_cfg2_vae_patch4" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_ulysses2_cfg2_vae_patch4</td>
+<td>throughput_qps</td>
+<td>0.0636</td>
+<td>0.0672</td>
+<td>-5.38%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Qwen/Qwen-Image-Edit-2511 (15 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-3">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="test_qwen_image_edit_2511_single_device">test_qwen_image_edit_2511_single_device</option><option value="test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit">test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit</option><option value="test_qwen_image_edit_2511_ulysses2_cfg2_vae_patch4">test_qwen_image_edit_2511_ulysses2_cfg2_vae_patch4</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="e2e_latency_ms">e2e_latency_ms</option><option value="peak_memory_gb">peak_memory_gb</option><option value="throughput_qps">throughput_qps</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_single_device</td>
+<td>e2e_latency_ms</td>
+<td>56226.7651</td>
+<td>53694.2</td>
+<td>-4.72%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_single_device</td>
+<td>peak_memory_gb</td>
+<td>66.2031</td>
+<td>62.893</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_single_device" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_single_device</td>
+<td>throughput_qps</td>
+<td>0.0178</td>
+<td>0.0186</td>
+<td>-4.38%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_single_device</td>
+<td>e2e_latency_ms</td>
+<td>14700.4576</td>
+<td>13839.8</td>
+<td>-6.22%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_single_device</td>
+<td>peak_memory_gb</td>
+<td>56.2617</td>
+<td>53.4486</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_single_device" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_single_device</td>
+<td>throughput_qps</td>
+<td>0.068</td>
+<td>0.0721</td>
+<td>-5.65%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit</td>
+<td>e2e_latency_ms</td>
+<td>10031.3502</td>
+<td>9491.8</td>
+<td>-5.68%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit</td>
+<td>peak_memory_gb</td>
+<td>66.0625</td>
+<td>62.7594</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit</td>
+<td>throughput_qps</td>
+<td>0.0996</td>
+<td>0.1051</td>
+<td>-5.27%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit</td>
+<td>e2e_latency_ms</td>
+<td>4066.8844</td>
+<td>3593.8</td>
+<td>-13.16%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit</td>
+<td>peak_memory_gb</td>
+<td>56.7197</td>
+<td>53.9199</td>
+<td>-5.19%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=512x512_steps20_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_cache_dit</td>
+<td>throughput_qps</td>
+<td>0.2459</td>
+<td>0.2776</td>
+<td>-11.43%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_vae_patch4" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_vae_patch4</td>
+<td>e2e_latency_ms</td>
+<td>19568.9958</td>
+<td>18559.1</td>
+<td>-5.44%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_vae_patch4" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_vae_patch4</td>
+<td>peak_memory_gb</td>
+<td>54.9805</td>
+<td>52.2314</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_edit_2511_ulysses2_cfg2_vae_patch4" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_edit</td>
+<td>bench=1536x1536_steps35_i2i_2img, data=random, c=1, n=10</td>
+<td>test_qwen_image_edit_2511_ulysses2_cfg2_vae_patch4</td>
+<td>throughput_qps</td>
+<td>0.0511</td>
+<td>0.0538</td>
+<td>-5.02%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Qwen/Qwen-Image-Layered (6 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-4">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="test_qwen_image_layered_single_device">test_qwen_image_layered_single_device</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="e2e_latency_ms">e2e_latency_ms</option><option value="peak_memory_gb">peak_memory_gb</option><option value="throughput_qps">throughput_qps</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="test_qwen_image_layered_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_layered</td>
+<td>bench=1024x1024_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_layered_single_device</td>
+<td>e2e_latency_ms</td>
+<td>25114.6393</td>
+<td>23914</td>
+<td>-5.02%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_layered_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_layered</td>
+<td>bench=1024x1024_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_layered_single_device</td>
+<td>peak_memory_gb</td>
+<td>62.2363</td>
+<td>59.1245</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_layered_single_device" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_layered</td>
+<td>bench=1024x1024_steps35_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_layered_single_device</td>
+<td>throughput_qps</td>
+<td>0.0398</td>
+<td>0.0417</td>
+<td>-4.52%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_layered_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>qwen_image_layered</td>
+<td>bench=640x640_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_layered_single_device</td>
+<td>e2e_latency_ms</td>
+<td>14778.0552</td>
+<td>14208</td>
+<td>-4.01%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_layered_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>qwen_image_layered</td>
+<td>bench=640x640_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_layered_single_device</td>
+<td>peak_memory_gb</td>
+<td>62.2363</td>
+<td>59.1245</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_qwen_image_layered_single_device" data-metric="throughput_qps" data-status="fail">
+<td>qwen_image_layered</td>
+<td>bench=640x640_steps20_i2i, data=random, c=1, n=10</td>
+<td>test_qwen_image_layered_single_device</td>
+<td>throughput_qps</td>
+<td>0.0677</td>
+<td>0.0703</td>
+<td>-3.75%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Qwen/Qwen3-Omni-30B-A3B-Instruct (105 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-5">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="qwen3_omni">qwen3_omni</option><option value="qwen3_omni_3gpu_replica2">qwen3_omni_3gpu_replica2</option><option value="qwen3_omni_chunk">qwen3_omni_chunk</option><option value="qwen3_omni_vllm_text">qwen3_omni_vllm_text</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="mean_audio_rtf">mean_audio_rtf</option><option value="mean_audio_ttfp_ms">mean_audio_ttfp_ms</option><option value="mean_e2el_ms">mean_e2el_ms</option><option value="mean_tpot_ms">mean_tpot_ms</option><option value="mean_ttft_ms">mean_ttft_ms</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option><option value="pass">pass</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_audio_rtf</td>
+<td>0.1963</td>
+<td>0.1695</td>
+<td>-15.78%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_e2el_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_e2el_ms</td>
+<td>18922.3435</td>
+<td>22413.667</td>
+<td>+15.58%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_ttft_ms</td>
+<td>130.9488</td>
+<td>109.1218</td>
+<td>-20.00%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_audio_rtf</td>
+<td>0.3776</td>
+<td>0.3234</td>
+<td>-16.76%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_e2el_ms</td>
+<td>52375.9634</td>
+<td>46345.8978</td>
+<td>-13.01%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_ttft_ms</td>
+<td>556.322</td>
+<td>447.7885</td>
+<td>-24.24%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_audio_rtf</td>
+<td>0.5399</td>
+<td>0.4438</td>
+<td>-21.65%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_e2el_ms</td>
+<td>79403.1662</td>
+<td>68350.4853</td>
+<td>-16.17%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_ttft_ms</td>
+<td>834.2297</td>
+<td>694.7487</td>
+<td>-20.08%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_audio_rtf</td>
+<td>0.2056</td>
+<td>0.2033</td>
+<td>-1.12%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_e2el_ms</td>
+<td>33135.231</td>
+<td>30808.9715</td>
+<td>-7.55%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_ttft_ms</td>
+<td>229.4409</td>
+<td>247.4411</td>
+<td>+7.27%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_audio_rtf</td>
+<td>0.2574</td>
+<td>0.2467</td>
+<td>-4.33%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_e2el_ms</td>
+<td>38312.4604</td>
+<td>35677.844</td>
+<td>-7.38%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_ttft_ms</td>
+<td>303.044</td>
+<td>354.9384</td>
+<td>+14.62%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_audio_rtf</td>
+<td>0.1516</td>
+<td>0.1406</td>
+<td>-7.84%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_e2el_ms</td>
+<td>4847.716</td>
+<td>4623.4173</td>
+<td>-4.85%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_ttft_ms</td>
+<td>344.8563</td>
+<td>323.3573</td>
+<td>-6.65%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_audio_rtf</td>
+<td>0.2388</td>
+<td>0.2091</td>
+<td>-14.22%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_e2el_ms</td>
+<td>7308.7104</td>
+<td>6441.0986</td>
+<td>-13.47%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_ttft_ms</td>
+<td>565.2827</td>
+<td>442.5815</td>
+<td>-27.72%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_audio_rtf</td>
+<td>0.1827</td>
+<td>0.1637</td>
+<td>-11.60%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_e2el_ms</td>
+<td>5410.1489</td>
+<td>4924.149</td>
+<td>-9.87%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni</td>
+<td>mean_ttft_ms</td>
+<td>356.7109</td>
+<td>215.4502</td>
+<td>-65.57%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_rtf</td>
+<td>0.2846</td>
+<td>0.3</td>
+<td>+5.13%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_ttfp_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_ttfp_ms</td>
+<td>647.322</td>
+<td>1200</td>
+<td>+46.06%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_tpot_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_tpot_ms</td>
+<td>16.545</td>
+<td>36</td>
+<td>+54.04%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_ttft_ms</td>
+<td>336.7133</td>
+<td>283</td>
+<td>-18.98%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=24, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_rtf</td>
+<td>0.3369</td>
+<td>0.35</td>
+<td>+3.75%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_ttfp_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=24, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_ttfp_ms</td>
+<td>986.5667</td>
+<td>1528</td>
+<td>+35.43%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_tpot_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=24, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_tpot_ms</td>
+<td>20.2155</td>
+<td>41</td>
+<td>+50.69%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=24, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_ttft_ms</td>
+<td>467.9046</td>
+<td>470</td>
+<td>+0.45%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_rtf</td>
+<td>0.3828</td>
+<td>0.39</td>
+<td>+1.86%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_ttfp_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_ttfp_ms</td>
+<td>1236.7239</td>
+<td>2100</td>
+<td>+41.11%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_tpot_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_tpot_ms</td>
+<td>23.5402</td>
+<td>45</td>
+<td>+47.69%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_ttft_ms</td>
+<td>705.9443</td>
+<td>869</td>
+<td>+18.76%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_rtf</td>
+<td>0.2367</td>
+<td>0.24</td>
+<td>+1.38%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_ttfp_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_ttfp_ms</td>
+<td>410.7149</td>
+<td>861</td>
+<td>+52.30%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_tpot_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_tpot_ms</td>
+<td>11.9671</td>
+<td>28</td>
+<td>+57.26%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_ttft_ms</td>
+<td>193.0904</td>
+<td>203</td>
+<td>+4.88%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_rtf</td>
+<td>0.1331</td>
+<td>0.14</td>
+<td>+4.90%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_ttfp_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_ttfp_ms</td>
+<td>433.4906</td>
+<td>684</td>
+<td>+36.62%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_ttft_ms</td>
+<td>325.5852</td>
+<td>377</td>
+<td>+13.64%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_rtf</td>
+<td>0.1955</td>
+<td>0.21</td>
+<td>+6.91%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_ttfp_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_ttfp_ms</td>
+<td>634.6875</td>
+<td>1119</td>
+<td>+43.28%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_ttft_ms</td>
+<td>432.9591</td>
+<td>522</td>
+<td>+17.06%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_rtf</td>
+<td>0.1521</td>
+<td>0.16</td>
+<td>+4.94%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_audio_ttfp_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_audio_ttfp_ms</td>
+<td>413.61</td>
+<td>686</td>
+<td>+39.71%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_3gpu_replica2" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni_3gpu_replica2</td>
+<td>mean_ttft_ms</td>
+<td>251.9078</td>
+<td>228</td>
+<td>-10.49%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_audio_rtf</td>
+<td>0.1389</td>
+<td>0.1279</td>
+<td>-8.58%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>10603.6504</td>
+<td>17619.9851</td>
+<td>+39.82%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>92.818</td>
+<td>135.4379</td>
+<td>+31.47%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>4460.5571</td>
+<td>4288.3029</td>
+<td>-4.02%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>72.2386</td>
+<td>78.4278</td>
+<td>+7.89%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_audio_rtf</td>
+<td>0.3871</td>
+<td>0.3712</td>
+<td>-4.29%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>59994.2884</td>
+<td>56657.1548</td>
+<td>-5.89%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>496.4808</td>
+<td>435.675</td>
+<td>-13.96%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>13194.107</td>
+<td>12607.5292</td>
+<td>-4.65%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>719.1174</td>
+<td>561.805</td>
+<td>-28.00%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_audio_rtf</td>
+<td>0.5554</td>
+<td>0.5634</td>
+<td>+1.42%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>86933.7489</td>
+<td>85097.6016</td>
+<td>-2.16%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>722.0577</td>
+<td>724.6836</td>
+<td>+0.36%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>18917.593</td>
+<td>18153.2547</td>
+<td>-4.21%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>1085.7176</td>
+<td>1038.043</td>
+<td>-4.59%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_audio_rtf</td>
+<td>0.2455</td>
+<td>0.2238</td>
+<td>-9.68%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>33137.8794</td>
+<td>34811.8335</td>
+<td>+4.81%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>205.6925</td>
+<td>187.0896</td>
+<td>-9.94%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>7675.093</td>
+<td>7429.9429</td>
+<td>-3.30%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>174.2962</td>
+<td>195.8037</td>
+<td>+10.98%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_audio_rtf</td>
+<td>0.2789</td>
+<td>0.2735</td>
+<td>-1.96%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>45797.3833</td>
+<td>43656.9501</td>
+<td>-4.90%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>173.2425</td>
+<td>400</td>
+<td>+56.69%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>9980.2826</td>
+<td>9451.6184</td>
+<td>-5.59%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>408.4311</td>
+<td>333.7318</td>
+<td>-22.38%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_audio_rtf</td>
+<td>0.1356</td>
+<td>0.1305</td>
+<td>-3.89%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>4593.5017</td>
+<td>4305.477</td>
+<td>-6.69%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>308.4127</td>
+<td>340.329</td>
+<td>+9.38%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>777.9268</td>
+<td>730.6995</td>
+<td>-6.46%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>301.8694</td>
+<td>275.3875</td>
+<td>-9.62%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_audio_rtf" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_audio_rtf</td>
+<td>0.2649</td>
+<td>0.2717</td>
+<td>+2.52%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="pass">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>7972.1222</td>
+<td>8516.8316</td>
+<td>+6.40%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>452.2927</td>
+<td>450.0155</td>
+<td>-0.51%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>1001.8532</td>
+<td>953.3493</td>
+<td>-5.09%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>367.5461</td>
+<td>357.7781</td>
+<td>-2.73%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_audio_rtf" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_audio_rtf</td>
+<td>0.1894</td>
+<td>0.1818</td>
+<td>-4.19%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>5584.6714</td>
+<td>5475.9565</td>
+<td>-1.99%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=audio_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>265.2</td>
+<td>220.0909</td>
+<td>-20.50%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_e2el_ms</td>
+<td>708.9117</td>
+<td>673.5789</td>
+<td>-5.25%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_chunk" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=text_only_metrics</td>
+<td>qwen3_omni_chunk</td>
+<td>mean_ttft_ms</td>
+<td>175.4468</td>
+<td>166.2201</td>
+<td>-5.55%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_e2el_ms</td>
+<td>4727.5897</td>
+<td>4382.7211</td>
+<td>-7.87%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=1, n=4, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_ttft_ms</td>
+<td>70.78</td>
+<td>69.1276</td>
+<td>-2.39%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_e2el_ms</td>
+<td>13616.1102</td>
+<td>12553.0186</td>
+<td>-8.47%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=16, n=64, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_ttft_ms</td>
+<td>443.0702</td>
+<td>422.0337</td>
+<td>-4.98%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_e2el_ms</td>
+<td>17733.6574</td>
+<td>16932.6065</td>
+<td>-4.73%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=32, n=128, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_ttft_ms</td>
+<td>555.7714</td>
+<td>532.0582</td>
+<td>-4.46%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_e2el_ms</td>
+<td>8107.9479</td>
+<td>7510.3815</td>
+<td>-7.96%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=4, n=16, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_ttft_ms</td>
+<td>325.1345</td>
+<td>255.1882</td>
+<td>-27.41%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_e2el_ms</td>
+<td>9454.9128</td>
+<td>9440.4854</td>
+<td>-0.15%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random, in=2500, out=900, c=8, n=32, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_ttft_ms</td>
+<td>316.8766</td>
+<td>310.639</td>
+<td>-2.01%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_e2el_ms</td>
+<td>496.3246</td>
+<td>485.2436</td>
+<td>-2.28%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=10, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_ttft_ms</td>
+<td>27.1454</td>
+<td>26.3381</td>
+<td>-3.07%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_e2el_ms</td>
+<td>578.1281</td>
+<td>561.3684</td>
+<td>-2.99%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=100, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_ttft_ms</td>
+<td>28.707</td>
+<td>27.6972</td>
+<td>-3.65%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_e2el_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_e2el_ms</td>
+<td>534.5274</td>
+<td>517.2017</td>
+<td>-3.35%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_omni_vllm_text" data-metric="mean_ttft_ms" data-status="fail">
+<td>qwen3_omni</td>
+<td>data=random-mm, in=100, out=100, n=40, profile=text_only_metrics</td>
+<td>qwen3_omni_vllm_text</td>
+<td>mean_ttft_ms</td>
+<td>27.5816</td>
+<td>26.4517</td>
+<td>-4.27%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Qwen/Qwen3-TTS-12Hz-1.7B-Base (11 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-6">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="qwen3_tts_base">qwen3_tts_base</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="audio_throughput">audio_throughput</option><option value="median_audio_rtf">median_audio_rtf</option><option value="median_audio_ttfp_ms">median_audio_ttfp_ms</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option><option value="pass">pass</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=1, n=20</td>
+<td>qwen3_tts_base</td>
+<td>median_audio_rtf</td>
+<td>0.1759</td>
+<td>0.1472</td>
+<td>-19.51%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=1, n=20</td>
+<td>qwen3_tts_base</td>
+<td>median_audio_ttfp_ms</td>
+<td>146.8548</td>
+<td>122.4504</td>
+<td>-19.93%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="audio_throughput" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=16, n=128</td>
+<td>qwen3_tts_base</td>
+<td>audio_throughput</td>
+<td>37.6713</td>
+<td>40.634</td>
+<td>-7.29%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=16, n=128</td>
+<td>qwen3_tts_base</td>
+<td>median_audio_rtf</td>
+<td>0.4025</td>
+<td>0.3642</td>
+<td>-10.52%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=16, n=128</td>
+<td>qwen3_tts_base</td>
+<td>median_audio_ttfp_ms</td>
+<td>725.1379</td>
+<td>647.1272</td>
+<td>-12.05%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="audio_throughput" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=64, n=128</td>
+<td>qwen3_tts_base</td>
+<td>audio_throughput</td>
+<td>39.4992</td>
+<td>43.0758</td>
+<td>-8.30%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=64, n=128</td>
+<td>qwen3_tts_base</td>
+<td>median_audio_rtf</td>
+<td>1.3303</td>
+<td>1.2282</td>
+<td>-8.31%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=64, n=128</td>
+<td>qwen3_tts_base</td>
+<td>median_audio_ttfp_ms</td>
+<td>5023.0345</td>
+<td>4777.2714</td>
+<td>-5.14%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="audio_throughput" data-status="pass">
+<td>qwen3_tts</td>
+<td>c=8, n=80</td>
+<td>qwen3_tts_base</td>
+<td>audio_throughput</td>
+<td>22.698</td>
+<td>20.5634</td>
+<td>+10.38%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=8, n=80</td>
+<td>qwen3_tts_base</td>
+<td>median_audio_rtf</td>
+<td>0.333</td>
+<td>0.2899</td>
+<td>-14.88%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_base" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>c=8, n=80</td>
+<td>qwen3_tts_base</td>
+<td>median_audio_ttfp_ms</td>
+<td>230.768</td>
+<td>199.1197</td>
+<td>-15.89%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice (28 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-7">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="qwen3_tts_customvoice">qwen3_tts_customvoice</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="audio_throughput">audio_throughput</option><option value="median_audio_rtf">median_audio_rtf</option><option value="median_audio_ttfp_ms">median_audio_ttfp_ms</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option><option value="pass">pass</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="audio_throughput" data-status="pass">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, n=100</td>
+<td>qwen3_tts_customvoice</td>
+<td>audio_throughput</td>
+<td>9.17</td>
+<td>9</td>
+<td>+1.89%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, n=100</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>0.1631</td>
+<td>0.1349</td>
+<td>-20.87%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, n=100</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>57.5611</td>
+<td>49.3466</td>
+<td>-16.65%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=1, n=20</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>0.1573</td>
+<td>0.1271</td>
+<td>-23.79%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=1, n=20</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>55.5614</td>
+<td>45.5391</td>
+<td>-22.01%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="audio_throughput" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=16, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>audio_throughput</td>
+<td>45.7931</td>
+<td>48.9046</td>
+<td>-6.36%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=16, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>0.3326</td>
+<td>0.3143</td>
+<td>-5.81%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=16, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>636.1382</td>
+<td>587.5877</td>
+<td>-8.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="audio_throughput" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=64, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>audio_throughput</td>
+<td>46.3375</td>
+<td>48.0505</td>
+<td>-3.57%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=64, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>1.2546</td>
+<td>1.1703</td>
+<td>-7.21%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=64, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>5097.2791</td>
+<td>4960.3726</td>
+<td>-2.76%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="audio_throughput" data-status="pass">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=8, n=80</td>
+<td>qwen3_tts_customvoice</td>
+<td>audio_throughput</td>
+<td>39.5289</td>
+<td>35.1923</td>
+<td>+12.32%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=8, n=80</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>0.195</td>
+<td>0.1637</td>
+<td>-19.09%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-design, c=8, n=80</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>78.506</td>
+<td>66.1471</td>
+<td>-18.68%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="audio_throughput" data-status="pass">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, n=100</td>
+<td>qwen3_tts_customvoice</td>
+<td>audio_throughput</td>
+<td>10.6139</td>
+<td>10.0881</td>
+<td>+5.21%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, n=100</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>0.1631</td>
+<td>0.1361</td>
+<td>-19.83%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, n=100</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>57.546</td>
+<td>49.6105</td>
+<td>-16.00%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=1, n=20</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>0.1487</td>
+<td>0.1247</td>
+<td>-19.27%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=1, n=20</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>52.5154</td>
+<td>43.5669</td>
+<td>-20.54%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="audio_throughput" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=16, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>audio_throughput</td>
+<td>46.2132</td>
+<td>49.6268</td>
+<td>-6.88%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=16, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>0.3331</td>
+<td>0.3148</td>
+<td>-5.82%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=16, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>791.9501</td>
+<td>713.7727</td>
+<td>-10.95%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="audio_throughput" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=64, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>audio_throughput</td>
+<td>47.8051</td>
+<td>48.3091</td>
+<td>-1.04%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="pass">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=64, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>1.1622</td>
+<td>1.1662</td>
+<td>+0.34%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="pass">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=64, n=128</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>5940.348</td>
+<td>5941.7179</td>
+<td>+0.02%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="audio_throughput" data-status="pass">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=8, n=80</td>
+<td>qwen3_tts_customvoice</td>
+<td>audio_throughput</td>
+<td>35.7025</td>
+<td>31.9068</td>
+<td>+11.90%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_rtf" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=8, n=80</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_rtf</td>
+<td>0.1913</td>
+<td>0.1626</td>
+<td>-17.65%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="qwen3_tts_customvoice" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>qwen3_tts</td>
+<td>data=seed-tts-text, c=8, n=80</td>
+<td>qwen3_tts_customvoice</td>
+<td>median_audio_ttfp_ms</td>
+<td>78.1869</td>
+<td>65.9174</td>
+<td>-18.61%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Wan-AI/Wan2.2-I2V-A14B-Diffusers (9 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-8">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="test_wan22_i2v_single_device">test_wan22_i2v_single_device</option><option value="test_wan22_i2v_usp2_vae_patch2_hsdp_slicing">test_wan22_i2v_usp2_vae_patch2_hsdp_slicing</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="e2e_latency_ms">e2e_latency_ms</option><option value="peak_memory_gb">peak_memory_gb</option><option value="throughput_qps">throughput_qps</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="test_wan22_i2v_single_device" data-metric="e2e_latency_ms" data-status="fail">
+<td>wan22</td>
+<td>bench=832x480_frames81_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_single_device</td>
+<td>e2e_latency_ms</td>
+<td>22724.6838</td>
+<td>21435.4</td>
+<td>-6.01%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_wan22_i2v_single_device" data-metric="peak_memory_gb" data-status="fail">
+<td>wan22</td>
+<td>bench=832x480_frames81_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_single_device</td>
+<td>peak_memory_gb</td>
+<td>74.5863</td>
+<td>70.857</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_wan22_i2v_single_device" data-metric="throughput_qps" data-status="fail">
+<td>wan22</td>
+<td>bench=832x480_frames81_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_single_device</td>
+<td>throughput_qps</td>
+<td>0.044</td>
+<td>0.0465</td>
+<td>-5.37%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_wan22_i2v_usp2_vae_patch2_hsdp_slicing" data-metric="e2e_latency_ms" data-status="fail">
+<td>wan22</td>
+<td>bench=1280x720_frames121_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_usp2_vae_patch2_hsdp_slicing</td>
+<td>e2e_latency_ms</td>
+<td>82077.0908</td>
+<td>77856.5</td>
+<td>-5.42%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_wan22_i2v_usp2_vae_patch2_hsdp_slicing" data-metric="peak_memory_gb" data-status="fail">
+<td>wan22</td>
+<td>bench=1280x720_frames121_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_usp2_vae_patch2_hsdp_slicing</td>
+<td>peak_memory_gb</td>
+<td>56.0873</td>
+<td>52.6834</td>
+<td>-6.46%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_wan22_i2v_usp2_vae_patch2_hsdp_slicing" data-metric="throughput_qps" data-status="fail">
+<td>wan22</td>
+<td>bench=1280x720_frames121_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_usp2_vae_patch2_hsdp_slicing</td>
+<td>throughput_qps</td>
+<td>0.0122</td>
+<td>0.0128</td>
+<td>-4.82%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_wan22_i2v_usp2_vae_patch2_hsdp_slicing" data-metric="e2e_latency_ms" data-status="fail">
+<td>wan22</td>
+<td>bench=832x480_frames81_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_usp2_vae_patch2_hsdp_slicing</td>
+<td>e2e_latency_ms</td>
+<td>16038.0932</td>
+<td>15558.9</td>
+<td>-3.08%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_wan22_i2v_usp2_vae_patch2_hsdp_slicing" data-metric="peak_memory_gb" data-status="fail">
+<td>wan22</td>
+<td>bench=832x480_frames81_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_usp2_vae_patch2_hsdp_slicing</td>
+<td>peak_memory_gb</td>
+<td>47.0184</td>
+<td>44.6708</td>
+<td>-5.26%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_wan22_i2v_usp2_vae_patch2_hsdp_slicing" data-metric="throughput_qps" data-status="fail">
+<td>wan22</td>
+<td>bench=832x480_frames81_steps4, data=random, c=1, n=10</td>
+<td>test_wan22_i2v_usp2_vae_patch2_hsdp_slicing</td>
+<td>throughput_qps</td>
+<td>0.0624</td>
+<td>0.0642</td>
+<td>-2.88%</td>
+<td>fail</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">openbmb/VoxCPM2 (13 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-9">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="voxcpm2">voxcpm2</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="audio_throughput">audio_throughput</option><option value="median_audio_rtf">median_audio_rtf</option><option value="median_audio_ttfp_ms">median_audio_ttfp_ms</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option><option value="pass">pass</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_rtf" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>voxcpm2</td>
+<td>median_audio_rtf</td>
+<td>0.0526</td>
+<td>0.0427</td>
+<td>-23.07%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>voxcpm2</td>
+<td>median_audio_ttfp_ms</td>
+<td>152.4989</td>
+<td>113.9351</td>
+<td>-33.85%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="audio_throughput" data-status="pass">
+<td>other</td>
+<td>c=8, n=80</td>
+<td>voxcpm2</td>
+<td>audio_throughput</td>
+<td>48.0477</td>
+<td>20.0128</td>
+<td>+140.09%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_rtf" data-status="fail">
+<td>other</td>
+<td>c=8, n=80</td>
+<td>voxcpm2</td>
+<td>median_audio_rtf</td>
+<td>0.1614</td>
+<td>0.1462</td>
+<td>-10.37%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_ttfp_ms" data-status="pass">
+<td>other</td>
+<td>c=8, n=80</td>
+<td>voxcpm2</td>
+<td>median_audio_ttfp_ms</td>
+<td>352.8286</td>
+<td>415.9187</td>
+<td>+15.17%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="audio_throughput" data-status="pass">
+<td>other</td>
+<td>n=100</td>
+<td>voxcpm2</td>
+<td>audio_throughput</td>
+<td>16.995</td>
+<td>16.075</td>
+<td>+5.72%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_rtf" data-status="fail">
+<td>other</td>
+<td>n=100</td>
+<td>voxcpm2</td>
+<td>median_audio_rtf</td>
+<td>0.0446</td>
+<td>0.0424</td>
+<td>-5.18%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>other</td>
+<td>n=100</td>
+<td>voxcpm2</td>
+<td>median_audio_ttfp_ms</td>
+<td>83.1071</td>
+<td>70.0958</td>
+<td>-18.56%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_rtf" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>voxcpm2</td>
+<td>median_audio_rtf</td>
+<td>0.0429</td>
+<td>0.0366</td>
+<td>-17.29%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_ttfp_ms" data-status="fail">
+<td>other</td>
+<td>c=1, n=20</td>
+<td>voxcpm2</td>
+<td>median_audio_ttfp_ms</td>
+<td>81.5287</td>
+<td>66.2748</td>
+<td>-23.02%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="audio_throughput" data-status="pass">
+<td>other</td>
+<td>c=8, n=80</td>
+<td>voxcpm2</td>
+<td>audio_throughput</td>
+<td>77.8122</td>
+<td>64.5428</td>
+<td>+20.56%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_rtf" data-status="pass">
+<td>other</td>
+<td>c=8, n=80</td>
+<td>voxcpm2</td>
+<td>median_audio_rtf</td>
+<td>0.1025</td>
+<td>0.1056</td>
+<td>+2.98%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="voxcpm2" data-metric="median_audio_ttfp_ms" data-status="pass">
+<td>other</td>
+<td>c=8, n=80</td>
+<td>voxcpm2</td>
+<td>median_audio_ttfp_ms</td>
+<td>200.8815</td>
+<td>307.6373</td>
+<td>+34.70%</td>
+<td>pass</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details>
+<details class="report-subcard report-subcard--bk-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">tencent/HunyuanImage-3.0-Instruct (10 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="perf-model-10">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="test_hunyuan_image3_ti2i_inline">test_hunyuan_image3_ti2i_inline</option><option value="test_hunyuan_image_tp2_cfgp2">test_hunyuan_image_tp2_cfgp2</option><option value="test_hunyuan_image_tp2_sp2">test_hunyuan_image_tp2_sp2</option><option value="test_hunyuan_image_tp4">test_hunyuan_image_tp4</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="e2e_latency_ms">e2e_latency_ms</option><option value="peak_memory_gb">peak_memory_gb</option><option value="throughput_qps">throughput_qps</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option><option value="pass">pass</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="test_hunyuan_image3_ti2i_inline" data-metric="e2e_latency_ms" data-status="pass">
+<td>other</td>
+<td>c=16, n=96</td>
+<td>test_hunyuan_image3_ti2i_inline</td>
+<td>e2e_latency_ms</td>
+<td>41104.3958</td>
+<td>79038.5</td>
+<td>+47.99%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image3_ti2i_inline" data-metric="peak_memory_gb" data-status="pass">
+<td>other</td>
+<td>c=16, n=96</td>
+<td>test_hunyuan_image3_ti2i_inline</td>
+<td>peak_memory_gb</td>
+<td>0</td>
+<td>68.3594</td>
+<td>+100.00%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image3_ti2i_inline" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=16, n=96</td>
+<td>test_hunyuan_image3_ti2i_inline</td>
+<td>throughput_qps</td>
+<td>0.3626</td>
+<td>0.1874</td>
+<td>+93.51%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_cfgp2" data-metric="peak_memory_gb" data-status="fail">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_cfgp2</td>
+<td>peak_memory_gb</td>
+<td>104.6641</td>
+<td>98.7305</td>
+<td>-6.01%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_cfgp2" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_cfgp2</td>
+<td>throughput_qps</td>
+<td>0.3047</td>
+<td>0.21</td>
+<td>+45.12%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_sp2" data-metric="peak_memory_gb" data-status="fail">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_sp2</td>
+<td>peak_memory_gb</td>
+<td>104.6641</td>
+<td>95.1191</td>
+<td>-10.03%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_sp2" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_sp2</td>
+<td>throughput_qps</td>
+<td>0.3026</td>
+<td>0.2</td>
+<td>+51.31%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp4" data-metric="e2e_latency_ms" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp4</td>
+<td>e2e_latency_ms</td>
+<td>2450.9627</td>
+<td>4695.3</td>
+<td>+47.80%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp4" data-metric="peak_memory_gb" data-status="fail">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp4</td>
+<td>peak_memory_gb</td>
+<td>64.8535</td>
+<td>55.5781</td>
+<td>-16.69%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp4" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp4</td>
+<td>throughput_qps</td>
+<td>0.408</td>
+<td>0.213</td>
+<td>+91.53%</td>
+<td>pass</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details></div></details>
+<details class="report-subcard report-subcard--bk-fail"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="report-subcard-title">失败分析</span></span></summary><div class="report-subcard-body"><p class="hint">点击各步骤标题可展开或折叠失败详情与日志摘录。</p>
+<details class="job-fail-details job-fail-details-bk">
+<summary class="job-fail-details-summary job-fail-details-summary-bk">
+<h2><span class="heading-row"><span class="heading-ico"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="heading-text"><span class="heading-label">Buildkite step: :full_moon: Omni · Function Test with H100</span></span></span></h2>
+<p class="meta"><strong>Step link:</strong> <a href="https://buildkite.com/vllm/vllm-omni/builds/11537#019ed6c9-486d-42c8-93c9-d65116b19019">open</a></p>
+</summary>
+<div class="job-fail-details-body">
+<h3 class="section-failures"><span class="heading-row"><span class="heading-ico"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span><span class="heading-text"><span class="heading-label">Failures &amp; errors</span></span></span></h3>
+<div class="table-scroll"><table class="fail-table">
+<thead><tr>
+<th scope="col"><span class="th-lbl"><svg class="ico th-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Test node</span></span></th>
+<th scope="col"><span class="th-lbl"><svg class="ico th-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Log reason</span></span></th>
+<th scope="col"><span class="th-lbl"><svg class="ico th-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-6.2-1.9L12 3z"/></svg><span>Analysis</span></span></th>
+<th scope="col"><span class="th-lbl"><svg class="ico th-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg><span>Log excerpt</span></span></th>
+<th scope="col"><span class="th-lbl"><svg class="ico th-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>GitHub Issue</span></span></th>
+</tr></thead>
+<tbody>
+<tr data-issue-env="ci" data-vllm-version="" data-vllm-omni-version="" data-build-commit="d744940b181c" data-report-context="Buildkite scheduled nightly (main) · build #11537 · step: :full_moon: Omni · Function Test with H100">
+<td class="mono">tests/e2e/online_serving/test_qwen3_omni_expansion.py::test_large_image_to_text_audio_001[default]</td>
+<td class="reason">AssertionError: The audio content is not same as the text</td>
+<td class="analysis">归类：断言失败。通常是期望值与实际运行结果不一致，请核对测试逻辑、边界条件与数据准备是否正确。</td>
+<td class="excerpt-cell"><pre class="log-excerpt">_bk;t=1781723580135FAILED tests/e2e/online_serving/test_qwen3_omni_expansion.py::test_text_to_audio_long_output_001[default] - AssertionError: The audio content is not same as the text
+_bk;t=1781723580135====================================== 2 failed, 41 passed, 15 skipped, 357 deselected, 23 warnings in 3217.94s (0:53:37) ======================================
+_bk;t=1781723583819sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute
+_bk;t=1781723586573^^^ +++
+_bk;t=1781723586573🚨 Error: The command exited with status 1
+_bk;t=1781723586573^^^ +++
+_bk;t=1781723586573user command error: exit status 1</pre></td>
+<td class="issue-action-cell"><button type="button" class="btn-github-issue"><svg class="ico btn-issue-ico" width="17" height="17" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="btn-issue-text">File issue</span></button></td>
+</tr>
+<tr data-issue-env="ci" data-vllm-version="" data-vllm-omni-version="" data-build-commit="d744940b181c" data-report-context="Buildkite scheduled nightly (main) · build #11537 · step: :full_moon: Omni · Function Test with H100">
+<td class="mono">tests/e2e/online_serving/test_qwen3_omni_expansion.py::test_text_to_audio_long_output_001[default]</td>
+<td class="reason">AssertionError: The audio content is not same as the text</td>
+<td class="analysis">归类：断言失败。通常是期望值与实际运行结果不一致，请核对测试逻辑、边界条件与数据准备是否正确。</td>
+<td class="excerpt-cell"><pre class="log-excerpt">_bk;t=1781723580135====================================== 2 failed, 41 passed, 15 skipped, 357 deselected, 23 warnings in 3217.94s (0:53:37) ======================================
+_bk;t=1781723583819sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute
+_bk;t=1781723586573^^^ +++
+_bk;t=1781723586573🚨 Error: The command exited with status 1
+_bk;t=1781723586573^^^ +++
+_bk;t=1781723586573user command error: exit status 1</pre></td>
+<td class="issue-action-cell"><button type="button" class="btn-github-issue"><svg class="ico btn-issue-ico" width="17" height="17" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="btn-issue-text">File issue</span></button></td>
+</tr>
+</tbody></table></div>
+</div></details></div></details>
+</section>
+<section class="panel nightly-root nightly-root--local">
+<h2><span class="heading-row"><span class="heading-ico"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></span><span class="heading-text"><span class="heading-label">Local Test</span></span></span></h2>
+<details class="report-subcard"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">Summary</span></span></summary><div class="report-subcard-body"><details class="local-summary-pillar local-summary-pillar--other">
+<summary class="local-summary-pillar-summary">其他</summary>
+<div class="local-summary-pillar-body">
+<div class="table-scroll"><table class="summary">
+<thead><tr>
+<th>Job</th>
+<th>Total</th>
+<th>Passed</th>
+<th>Failed</th>
+<th>Skipped</th>
+<th>Errors</th>
+<th>执行时间</th>
+</tr></thead><tbody>
+<tr class="summary-row summary-row--ok">
+<td>test_hunyuan_image3</td>
+<td>4</td>
+<td>1</td>
+<td>0</td>
+<td>3</td>
+<td>0</td>
+<td>283.36s</td>
+</tr>
+</tbody></table></div>
+</div>
+</details>
+<p class="hint">若存在失败，请在「失败分析」中按 Job 展开或折叠查看摘录。</p>
+<p class="hint summary-legend">行底色：<strong class="summary-legend--ok">绿</strong> = 本 Job 无失败/错误；<strong class="summary-legend--fail">红</strong> = 存在失败、错误或日志拉取失败；<strong class="summary-legend--unk">灰</strong> = 未识别到 pytest 结果摘要。</p></div></details>
+<details class="report-subcard report-subcard--perf"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="report-subcard-title">性能分析</span></span></summary><div class="report-subcard-body"><p class="meta"><strong>文件:</strong> <code>D:\Files\Projects\logs\H200_hunyuan_20260618\nightly_jobs_local_20260617_120017\nightly_perf_manual.xlsx</code></p>
+<h3 class="perf-sheet-title">omni_summary</h3>
+<div class="table-scroll"><table class="perf-manual">
+<thead><tr>
+<th>date</th>
+<th>endpoint_type</th>
+<th>backend</th>
+<th>model_id</th>
+<th>tokenizer_id</th>
+<th>test_name</th>
+<th>dataset_name</th>
+<th>num_prompts</th>
+<th>request_rate</th>
+<th>burstiness</th>
+<th>max_concurrency</th>
+<th>duration</th>
+<th>completed</th>
+<th>failed</th>
+<th>request_throughput</th>
+<th>output_throughput</th>
+<th>total_token_throughput</th>
+<th>mean_ttft_ms</th>
+<th>median_ttft_ms</th>
+<th>p99_ttft_ms</th>
+<th>mean_tpot_ms</th>
+<th>median_tpot_ms</th>
+<th>p99_tpot_ms</th>
+<th>mean_itl_ms</th>
+<th>median_itl_ms</th>
+<th>p99_itl_ms</th>
+<th>mean_e2el_ms</th>
+<th>median_e2el_ms</th>
+<th>p99_e2el_ms</th>
+<th>mean_audio_rtf</th>
+<th>median_audio_rtf</th>
+<th>p99_audio_rtf</th>
+<th>mean_audio_duration_s</th>
+<th>median_audio_duration_s</th>
+<th>p99_audio_duration_s</th>
+<th>commit_sha</th>
+<th>build_id</th>
+<th>build_url</th>
+<th>source_file</th>
+</tr></thead><tbody>
+</tbody></table></div>
+<h3 class="perf-sheet-title">diffusion_summary</h3>
+<div class="table-scroll"><table class="perf-manual">
+<thead><tr>
+<th>date</th>
+<th>test_name</th>
+<th>model</th>
+<th>endpoint</th>
+<th>dataset</th>
+<th>task</th>
+<th>completed_requests</th>
+<th>failed_requests</th>
+<th>duration</th>
+<th>throughput_qps</th>
+<th>latency_mean</th>
+<th>latency_median</th>
+<th>latency_p50</th>
+<th>latency_p99</th>
+<th>peak_memory_mb_max</th>
+<th>peak_memory_mb_mean</th>
+<th>peak_memory_mb_median</th>
+<th>slo_attainment_rate</th>
+<th>commit_sha</th>
+<th>build_id</th>
+<th>build_url</th>
+<th>source_file</th>
+<th>vae.decode_mean</th>
+<th>vae.decode_p50</th>
+<th>vae.decode_p99</th>
+<th>diffuse_mean</th>
+<th>diffuse_p50</th>
+<th>diffuse_p99</th>
+<th>text_encoder.forward_mean</th>
+<th>text_encoder.forward_p50</th>
+<th>text_encoder.forward_p99</th>
+</tr></thead><tbody>
+<tr>
+<td>20260617-120519</td>
+<td>test_hunyuan_image3_ti2i_inline</td>
+<td>tencent/HunyuanImage-3.0-Instruct</td>
+<td>/v1/images/edits</td>
+<td>custom</td>
+<td>ti2i</td>
+<td>96</td>
+<td>0</td>
+<td>264.7315029874444</td>
+<td>0.3626315678967496</td>
+<td>41.10439575933075</td>
+<td>38.62975644972175</td>
+<td>38.62975644972175</td>
+<td>69.21162203997373</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>diffusion_result_test_hunyuan_image3_it2i_20260617-120519.json</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>20260617-121638</td>
+<td>test_hunyuan_image_tp2_cfgp2</td>
+<td>tencent/HunyuanImage-3.0-Instruct</td>
+<td>/v1/chat/completions</td>
+<td>random</td>
+<td>t2i</td>
+<td>10</td>
+<td>0</td>
+<td>32.81445232778788</td>
+<td>0.3047437726556789</td>
+<td>3.281253064796329</td>
+<td>3.281085817143321</td>
+<td>3.281085817143321</td>
+<td>3.338216212429106</td>
+<td>107176</td>
+<td>107176</td>
+<td>107176</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>diffusion_result_test_hunyuan_image_tp2_cfgp2_20260617-121638.json</td>
+<td>0.4545289343222976</td>
+<td>0.4544604690745473</td>
+<td>0.4552367051690817</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>20260617-121456</td>
+<td>test_hunyuan_image_tp2_sp2</td>
+<td>tencent/HunyuanImage-3.0-Instruct</td>
+<td>/v1/chat/completions</td>
+<td>random</td>
+<td>t2i</td>
+<td>10</td>
+<td>0</td>
+<td>33.04566420055926</td>
+<td>0.3026115601522926</td>
+<td>3.304378047026694</td>
+<td>3.309560352005064</td>
+<td>3.309560352005064</td>
+<td>3.339065013248474</td>
+<td>107176</td>
+<td>107176</td>
+<td>107176</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>diffusion_result_test_hunyuan_image_tp2_sp2_20260617-121456.json</td>
+<td>0.4546565296128392</td>
+<td>0.4547917060554028</td>
+<td>0.4554756514728069</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>20260617-121319</td>
+<td>test_hunyuan_image_tp4</td>
+<td>tencent/HunyuanImage-3.0-Instruct</td>
+<td>/v1/chat/completions</td>
+<td>random</td>
+<td>t2i</td>
+<td>10</td>
+<td>0</td>
+<td>24.51198898814619</td>
+<td>0.4079636297501572</td>
+<td>2.450962662883103</td>
+<td>2.457849008031189</td>
+<td>2.457849008031189</td>
+<td>2.510619021635502</td>
+<td>66410</td>
+<td>66410</td>
+<td>66410</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>diffusion_result_test_hunyuan_image_tp4_20260617-121319.json</td>
+<td>0.4534537062048912</td>
+<td>0.4535185182467103</td>
+<td>0.4542446320317686</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div></div></details>
+<details class="report-subcard report-subcard--local-perf-baseline"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="report-subcard-title">性能基线对比</span></span></summary><div class="report-subcard-body"><p class="meta"><strong>数据源:</strong> <code>D:\Files\Projects\GitHub\remote\vllm-omni-kanban\data\local_nightly_raw\manual_20260617</code></p>
+<p class="meta"><strong>文件数:</strong> 4</p>
+<p class="hint">读取最新 local perf benchmark result JSON（2026-06-17），仅展示包含 baseline 的指标。</p>
+<p class="meta"><strong>统计:</strong> pass=11, fail=3, n/a=0</p>
+<details class="report-subcard report-subcard--local-perf-model"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span class="report-subcard-title">tencent/HunyuanImage-3.0-Instruct (14 rows)</span></span></summary><div class="report-subcard-body"><div class="perf-filter-scope" data-perf-filter-scope="local-perf-model-0">
+<div class="perf-filter-bar">
+<label class="perf-filter-label"><span>Test</span><select class="perf-filter-select" data-filter-key="test"><option value="">All</option><option value="test_hunyuan_image3_ti2i_inline">test_hunyuan_image3_ti2i_inline</option><option value="test_hunyuan_image_tp2_cfgp2">test_hunyuan_image_tp2_cfgp2</option><option value="test_hunyuan_image_tp2_sp2">test_hunyuan_image_tp2_sp2</option><option value="test_hunyuan_image_tp4">test_hunyuan_image_tp4</option></select></label>
+<label class="perf-filter-label"><span>Metric</span><select class="perf-filter-select" data-filter-key="metric"><option value="">All</option><option value="e2e_latency_ms">e2e_latency_ms</option><option value="e2e_latency_p99_ms">e2e_latency_p99_ms</option><option value="peak_memory_gb">peak_memory_gb</option><option value="throughput_qps">throughput_qps</option></select></label>
+<label class="perf-filter-label"><span>Status</span><select class="perf-filter-select" data-filter-key="status"><option value="">All</option><option value="fail">fail</option><option value="pass">pass</option></select></label>
+</div>
+<div class="table-scroll">
+<table class="summary perf-filter-table">
+<thead><tr>
+<th>Type</th>
+<th>Config</th>
+<th>Test</th>
+<th>Metric</th>
+<th>latest</th>
+<th>baseline</th>
+<th>vs baseline</th>
+<th>Status</th>
+</tr></thead><tbody>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp4" data-metric="e2e_latency_ms" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp4</td>
+<td>e2e_latency_ms</td>
+<td>2450.9627</td>
+<td>4695.3</td>
+<td>+47.80%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_cfgp2" data-metric="e2e_latency_p99_ms" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_cfgp2</td>
+<td>e2e_latency_p99_ms</td>
+<td>3338.2162</td>
+<td>4746.9</td>
+<td>+29.68%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_sp2" data-metric="e2e_latency_p99_ms" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_sp2</td>
+<td>e2e_latency_p99_ms</td>
+<td>3339.065</td>
+<td>5102.5</td>
+<td>+34.56%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp4" data-metric="e2e_latency_p99_ms" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp4</td>
+<td>e2e_latency_p99_ms</td>
+<td>2510.619</td>
+<td>4860.1</td>
+<td>+48.34%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_cfgp2" data-metric="peak_memory_gb" data-status="fail">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_cfgp2</td>
+<td>peak_memory_gb</td>
+<td>104.6641</td>
+<td>98.7305</td>
+<td>-6.01%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_sp2" data-metric="peak_memory_gb" data-status="fail">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_sp2</td>
+<td>peak_memory_gb</td>
+<td>104.6641</td>
+<td>95.1191</td>
+<td>-10.03%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp4" data-metric="peak_memory_gb" data-status="fail">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp4</td>
+<td>peak_memory_gb</td>
+<td>64.8535</td>
+<td>55.5781</td>
+<td>-16.69%</td>
+<td>fail</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_cfgp2" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_cfgp2</td>
+<td>throughput_qps</td>
+<td>0.3047</td>
+<td>0.21</td>
+<td>+45.12%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp2_sp2" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp2_sp2</td>
+<td>throughput_qps</td>
+<td>0.3026</td>
+<td>0.2</td>
+<td>+51.31%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image_tp4" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=1, n=10</td>
+<td>test_hunyuan_image_tp4</td>
+<td>throughput_qps</td>
+<td>0.408</td>
+<td>0.213</td>
+<td>+91.53%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image3_ti2i_inline" data-metric="e2e_latency_ms" data-status="pass">
+<td>other</td>
+<td>c=16, n=96</td>
+<td>test_hunyuan_image3_ti2i_inline</td>
+<td>e2e_latency_ms</td>
+<td>41104.3958</td>
+<td>79038.5</td>
+<td>+47.99%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image3_ti2i_inline" data-metric="e2e_latency_p99_ms" data-status="pass">
+<td>other</td>
+<td>c=16, n=96</td>
+<td>test_hunyuan_image3_ti2i_inline</td>
+<td>e2e_latency_p99_ms</td>
+<td>69211.622</td>
+<td>101852</td>
+<td>+32.05%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image3_ti2i_inline" data-metric="peak_memory_gb" data-status="pass">
+<td>other</td>
+<td>c=16, n=96</td>
+<td>test_hunyuan_image3_ti2i_inline</td>
+<td>peak_memory_gb</td>
+<td>0</td>
+<td>68.3594</td>
+<td>+100.00%</td>
+<td>pass</td>
+</tr>
+<tr data-perf-row="1" data-test="test_hunyuan_image3_ti2i_inline" data-metric="throughput_qps" data-status="pass">
+<td>other</td>
+<td>c=16, n=96</td>
+<td>test_hunyuan_image3_ti2i_inline</td>
+<td>throughput_qps</td>
+<td>0.3626</td>
+<td>0.1874</td>
+<td>+93.51%</td>
+<td>pass</td>
+</tr>
+</tbody></table></div>
+<p class="note perf-filter-empty" data-perf-empty hidden>No rows match filters.</p>
+</div></div></details></div></details>
+<details class="report-subcard report-subcard--local-fail"><summary class="report-subcard-summary"><span class="report-subcard-summary-inner"><svg class="ico report-subcard-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="report-subcard-title">失败分析</span></span></summary><div class="report-subcard-body"><p class="note">当前无失败或错误需逐项分析。</p></div></details>
+</section>
+</div>
+
+<div id="gh-issue-modal" class="gh-modal" hidden aria-hidden="true">
+  <div class="gh-modal-backdrop" tabindex="-1"></div>
+  <div class="gh-modal-panel" role="dialog" aria-modal="true" aria-labelledby="gh-issue-dialog-title">
+    <header class="gh-modal-head">
+      <h2 id="gh-issue-dialog-title">File a vllm-omni bug report</h2>
+      <button type="button" class="gh-modal-x" id="gh-issue-close" aria-label="Close">×</button>
+    </header>
+    <p class="gh-modal-hint">Body sections follow the upstream
+      <a href="https://github.com/vllm-project/vllm-omni/blob/main/.github/ISSUE_TEMPLATE/400-bug-report.yml" target="_blank" rel="noopener noreferrer">bug report template</a>
+      (<code>400-bug-report.yml</code>).
+      For <strong>Buildkite</strong> rows, the body uses <code>ci env</code> and tries to fill <strong>vllm / vllm-omni</strong>
+      versions by scanning the step log; paste anything missing from the build log if needed.
+      Click <strong>Open GitHub</strong> (template and title are pre-filled), then paste the Markdown below into
+      <strong>Describe the bug</strong>. Redact secrets before submitting.</p>
+    <textarea id="gh-issue-body-text" class="gh-issue-textarea" rows="20" spellcheck="false"></textarea>
+    <footer class="gh-modal-actions">
+      <button type="button" class="btn-gh-copy" id="gh-issue-copy">Copy body</button>
+      <a class="btn-gh-open" id="gh-issue-open" href="https://github.com/vllm-project/vllm-omni/issues/new" target="_blank" rel="noopener noreferrer">Open GitHub</a>
+    </footer>
+  </div>
+</div>
+<script>
+(function () {
+  var modal = document.getElementById("gh-issue-modal");
+  var ta = document.getElementById("gh-issue-body-text");
+  var openA = document.getElementById("gh-issue-open");
+  var copyBtn = document.getElementById("gh-issue-copy");
+  var closeBtn = document.getElementById("gh-issue-close");
+  var backdrop = modal ? modal.querySelector(".gh-modal-backdrop") : null;
+  if (!modal || !ta || !openA || !copyBtn || !closeBtn || !backdrop) return;
+  var issueBase = "https://github.com/vllm-project/vllm-omni/issues/new";
+  var bugTemplate = "400-bug-report.yml";
+
+  function gatherRow(btn) {
+    var tr = btn.closest("tr");
+    if (!tr || !tr.cells || tr.cells.length < 5) return null;
+    var ctx = tr.getAttribute("data-report-context") || "";
+    var node = tr.cells[0].innerText.trim();
+    var reason = tr.cells[1].innerText.trim();
+    var analysis = tr.cells[2].innerText.trim();
+    var pre = tr.cells[3].querySelector(".log-excerpt");
+    var excerpt = pre ? pre.innerText : "";
+    var isErr = node.indexOf("(ERROR)") !== -1;
+    var env = tr.getAttribute("data-issue-env") || "local";
+    var vllmVer = tr.getAttribute("data-vllm-version") || "";
+    var omniVer = tr.getAttribute("data-vllm-omni-version") || "";
+    var buildCommit = tr.getAttribute("data-build-commit") || "";
+    return {
+      ctx: ctx, node: node, reason: reason, analysis: analysis, excerpt: excerpt, isErr: isErr,
+      env: env, vllmVer: vllmVer, omniVer: omniVer, buildCommit: buildCommit,
+    };
+  }
+
+  function buildMarkdown(d) {
+    var kind = d.isErr ? "pytest ERROR" : "pytest FAILED";
+    var analysisNote;
+    if (d.analysis && d.analysis.trim()) {
+      analysisNote = [
+        "**Automated analysis (from report, not copied):**",
+        "The HTML report may include a short heuristic summary in another language in the Analysis column.",
+        "Please restate the failure in English for maintainers if you rely on that text.",
+        "",
+      ].join("\n");
+    } else {
+      analysisNote = [
+        "**Automated analysis:**",
+        "None in report.",
+        "",
+      ].join("\n");
+    }
+
+    var envSection;
+    if (d.env === "ci") {
+      envSection = [
+        "### Your current environment",
+        "",
+        "```text",
+        "ci env",
+        "```",
+        "",
+      ].join("\n");
+    } else {
+      envSection = [
+        "### Your current environment",
+        "",
+        "*(Local nightly logs — add `python collect_env.py` output here if useful.)*",
+        "",
+        "```text",
+        "(pending -- paste collect_env.py output here)",
+        "```",
+        "",
+      ].join("\n");
+    }
+
+    var vllmLine, omniLine;
+    if (d.env === "ci") {
+      vllmLine = (d.vllmVer && d.vllmVer.trim()) ? d.vllmVer.trim() : "(not found in Buildkite step log)";
+      if (d.omniVer && d.omniVer.trim()) {
+        omniLine = d.omniVer.trim();
+      } else if (d.buildCommit && d.buildCommit.trim()) {
+        omniLine = d.buildCommit.trim();
+      } else {
+        omniLine = "(not found in Buildkite step log)";
+      }
+    } else {
+      vllmLine = "(pending)";
+      omniLine = "(pending)";
+    }
+
+    return [
+      envSection,
+      "### Your code version",
+      "",
+      "The commit id or version of vllm",
+      "",
+      "```text",
+      vllmLine,
+      "```",
+      "",
+      "The commit id or version of vllm-omni",
+      "",
+      "```text",
+      omniLine,
+      "```",
+      "",
+      "### 🐛 Describe the bug",
+      "",
+      "**Report source:** " + d.ctx,
+      "**Failure kind:** " + kind,
+      "**Test node:** `" + d.node + "`",
+      "",
+      "**Log reason:**",
+      d.reason,
+      "",
+      analysisNote,
+      "**Pytest / CI log excerpt:**",
+      "",
+      "```text",
+      d.excerpt,
+      "```",
+      "",
+      "---",
+      "*Generated from a nightly HTML report. Redact secrets before submitting; complete the checkboxes on GitHub.*",
+    ].join("\n");
+  }
+
+  function issueTitle(d) {
+    var n = d.node.replace(/\s*\(ERROR\)\s*$/i, "");
+    var t = "[Bug]: Nightly / CI failed - " + n;
+    return t.length > 220 ? t.slice(0, 217) + "..." : t;
+  }
+
+  function openModal(d) {
+    ta.value = buildMarkdown(d);
+    var u = new URL(issueBase);
+    u.searchParams.set("template", bugTemplate);
+    u.searchParams.set("title", issueTitle(d));
+    openA.href = u.toString();
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    ta.focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest(".btn-github-issue");
+    if (b) {
+      ev.preventDefault();
+      var d = gatherRow(b);
+      if (d) openModal(d);
+    }
+  });
+  closeBtn.addEventListener("click", closeModal);
+  backdrop.addEventListener("click", closeModal);
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && !modal.hidden) closeModal();
+  });
+  copyBtn.addEventListener("click", function () {
+    var v = ta.value;
+    var reset = function () { copyBtn.textContent = "Copy body"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(v).then(function () {
+        copyBtn.textContent = "Copied";
+        setTimeout(reset, 1400);
+      }).catch(function () { ta.select(); document.execCommand("copy"); reset(); });
+    } else {
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      copyBtn.textContent = "Copied";
+      setTimeout(reset, 1400);
+    }
+  });
+
+  document.querySelectorAll(".btn-view-full-log").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var id = btn.getAttribute("aria-controls");
+      var panel = id ? document.getElementById(id) : null;
+      if (!panel) return;
+      var nowHidden = !panel.hidden;
+      panel.hidden = nowHidden;
+      btn.setAttribute("aria-expanded", nowHidden ? "false" : "true");
+      btn.textContent = nowHidden ? "查看完整日志" : "收起完整日志";
+    });
+  });
+
+  function applyPerfFilters(scope) {
+    var testSel = scope.querySelector('select[data-filter-key="test"]');
+    var metricSel = scope.querySelector('select[data-filter-key="metric"]');
+    var statusSel = scope.querySelector('select[data-filter-key="status"]');
+    var rows = scope.querySelectorAll('tr[data-perf-row="1"]');
+    var empty = scope.querySelector("[data-perf-empty]");
+    if (!testSel || !metricSel || !statusSel || !rows.length) return;
+
+    var testVal = testSel.value || "";
+    var metricVal = metricSel.value || "";
+    var statusVal = statusSel.value || "";
+    var visibleCount = 0;
+    rows.forEach(function (row) {
+      var ok = true;
+      if (testVal && row.getAttribute("data-test") !== testVal) ok = false;
+      if (metricVal && row.getAttribute("data-metric") !== metricVal) ok = false;
+      if (statusVal && row.getAttribute("data-status") !== statusVal) ok = false;
+      row.hidden = !ok;
+      if (ok) visibleCount += 1;
+    });
+    if (empty) {
+      empty.hidden = visibleCount !== 0;
+    }
+  }
+
+  document.querySelectorAll("[data-perf-filter-scope]").forEach(function (scope) {
+    scope.querySelectorAll("select[data-filter-key]").forEach(function (sel) {
+      sel.addEventListener("change", function () {
+        applyPerfFilters(scope);
+      });
+    });
+    applyPerfFilters(scope);
+  });
+})();
+</script>
+
+</body>
+</html>
+
