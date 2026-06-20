@@ -23,6 +23,10 @@ This page tracks Qwen Image Layered nightly benchmark runs: configurations, late
 
 <div class="omni-summary-grid" data-omni-history-summary></div>
 
+<nav class="omni-page-tabs" data-omni-page-tabs></nav>
+
+<div data-omni-tab="Performance" markdown="1">
+
 ## Trend Charts
 
 <div class="omni-section">
@@ -32,6 +36,10 @@ This page tracks Qwen Image Layered nightly benchmark runs: configurations, late
   <div data-omni-history-charts></div>
 </div>
 
+</div>
+
+<div data-omni-tab="History" markdown="1">
+
 ## History Table
 
 <div class="omni-section">
@@ -39,6 +47,8 @@ This page tracks Qwen Image Layered nightly benchmark runs: configurations, late
     <p>Rows are grouped by run date (newest date first; expand/collapse each day). Within a day, newest run first.</p>
   </div>
   <div data-omni-history-table></div>
+</div>
+
 </div>
 
 </section>

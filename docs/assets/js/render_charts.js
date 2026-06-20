@@ -270,133 +270,6 @@ function railNav() {
   return document.querySelector(".md-sidebar--secondary .md-nav--secondary");
 }
 
-function modelTopNavItems() {
-  return [
-    { slug: "qwen3-omni", label: "Qwen3 Omni" },
-    { slug: "qwen3-tts", label: "Qwen3 TTS" },
-    { slug: "qwen-image", label: "Qwen Image" },
-    { slug: "qwen-image-layered", label: "Qwen Image Layered" },
-    { slug: "qwen-image-edit", label: "Qwen Image Edit" },
-    { slug: "qwen-image-edit-2511", label: "Qwen Image Edit 2511" },
-    { slug: "wan22", label: "WAN 2.2" },
-    { slug: "hunyuan-image3", label: "Hunyuan Image 3" },
-    { slug: "bagel", label: "BAGEL" },
-    { slug: "voxcpm2", label: "VoxCPM2" },
-  ];
-}
-
-function ensureModelsHoverDropdown() {
-  const tabs = document.querySelector(".md-tabs .md-tabs__list");
-  if (!tabs || document.querySelector(".models-hover-dropdown")) {
-    return;
-  }
-
-  const modelsTabItem = [...tabs.querySelectorAll(":scope > .md-tabs__item")]
-    .find((item) => {
-      const link = item.querySelector(":scope > .md-tabs__link");
-      if (!link) {
-        return false;
-      }
-      const href = link.getAttribute("href") || "";
-      const text = (link.textContent || "").trim().toLowerCase();
-      return href.includes("/models/") || text === "models";
-    });
-
-  if (!modelsTabItem) {
-    return;
-  }
-
-  const path = window.location.pathname || "";
-
-  // Derive the site's base path from the FIRST models tab link Material already
-  // rendered. We read its RESOLVED .href (browser-absolute URL) rather than the
-  // raw attribute, because Material emits relative paths like 'models/qwen3-omni/'
-  // — those don't contain '/models/' as a substring, so attribute-string parsing
-  // doesn't work. The browser-resolved .href is always absolute regardless of
-  // base URL or current page depth.
-  function siteBase() {
-    const existingLink = modelsTabItem.querySelector(":scope > .md-tabs__link");
-    if (!existingLink || !existingLink.href) {
-      return "/";
-    }
-    const pathname = new URL(existingLink.href).pathname;
-    const idx = pathname.indexOf("/models/");
-    return idx >= 0 ? pathname.slice(0, idx + 1) : "/";
-  }
-  const base = siteBase();
-
-  const list = document.createElement("ul");
-  list.className = "models-hover-dropdown models-hover-dropdown--floating";
-
-  modelTopNavItems().forEach((item) => {
-    const subItem = document.createElement("li");
-    const subLink = document.createElement("a");
-    const href = `${base}models/${item.slug}/`;
-    const isActive = path.includes(`/models/${item.slug}/`);
-    subLink.className = `md-tabs__link${isActive ? " md-tabs__link--active" : ""}`;
-    subLink.href = href;
-    subLink.textContent = item.label;
-    subItem.append(subLink);
-    list.append(subItem);
-  });
-
-  modelsTabItem.classList.add("models-tab-parent");
-  document.body.append(list);
-
-  let hideTimer = null;
-
-  const clearHide = () => {
-    if (hideTimer) {
-      window.clearTimeout(hideTimer);
-      hideTimer = null;
-    }
-  };
-
-  const positionDropdown = () => {
-    const tabsHost = document.querySelector(".md-tabs .md-grid");
-    const hostRect = (tabsHost || tabs).getBoundingClientRect();
-    const rect = modelsTabItem.getBoundingClientRect();
-    list.style.left = `${Math.round(hostRect.left)}px`;
-    list.style.top = `${Math.round(rect.bottom + 2)}px`;
-    list.style.width = `${Math.round(hostRect.width)}px`;
-  };
-
-  const showDropdown = () => {
-    clearHide();
-    positionDropdown();
-    list.classList.add("models-hover-dropdown--open");
-    modelsTabItem.classList.add("models-tab-parent--open");
-  };
-
-  const hideDropdownSoon = () => {
-    clearHide();
-    hideTimer = window.setTimeout(() => {
-      list.classList.remove("models-hover-dropdown--open");
-      modelsTabItem.classList.remove("models-tab-parent--open");
-    }, 120);
-  };
-
-  modelsTabItem.addEventListener("mouseenter", showDropdown);
-  modelsTabItem.addEventListener("mouseleave", hideDropdownSoon);
-  modelsTabItem.addEventListener("focusin", showDropdown);
-  modelsTabItem.addEventListener("focusout", hideDropdownSoon);
-  list.addEventListener("mouseenter", showDropdown);
-  list.addEventListener("mouseleave", hideDropdownSoon);
-  list.addEventListener("focusin", showDropdown);
-  list.addEventListener("focusout", hideDropdownSoon);
-
-  window.addEventListener("scroll", () => {
-    if (list.classList.contains("models-hover-dropdown--open")) {
-      positionDropdown();
-    }
-  }, { passive: true });
-  window.addEventListener("resize", () => {
-    if (list.classList.contains("models-hover-dropdown--open")) {
-      positionDropdown();
-    }
-  });
-}
-
 function railLinkMap() {
   return new Map(
     [...document.querySelectorAll(".md-sidebar--secondary .md-nav--secondary .md-nav__link[href^='#']")]
@@ -729,9 +602,16 @@ function humanizeToken(value) {
     tpot: "TPOT",
     ttfp: "TTFP",
     itl: "ITL",
+    e2e: "E2E",
     e2el: "E2EL",
     rtf: "RTF",
-    qps: "QPS",
+    qps: "Request Rate",
+    // Unit suffixes: keep lowercase with parentheses ("TTFT (ms)" not "TTFT Ms").
+    ms: "(ms)",
+    s: "(s)",
+    db: "(dB)",
+    gb: "(GB)",
+    mb: "(MB)",
   };
   return mapping[value.toLowerCase()] || `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
@@ -755,7 +635,7 @@ function humanizeField(field) {
   const fixedLabels = {
     input_len: "INPUT LEN",
     output_len: "OUTPUT LEN",
-    qps: "QPS",
+    qps: "Request Rate",
     benchmark_name: "Benchmark Params Name",
     // Distinct from "Num Prompts": many filenames use two ints (e.g. …_10_10_…) so values can match by coincidence.
     max_concurrency: "Max concurrency (config)",
@@ -975,6 +855,12 @@ function setChart(container, option) {
     : new Set();
   chart.setOption(applyTheme(option), true);
   charts.set(container, chart);
+  if (!resizeBound) {
+    window.addEventListener("resize", () => {
+      charts.forEach((instance) => instance.resize());
+    });
+    resizeBound = true;
+  }
   if (omniOptionHasMarkLineSeries(option)) {
     wireOmniBaselineHover(chart);
   }
@@ -1093,6 +979,7 @@ function recordFilterValue(record, field) {
   return String(raw).trim();
 }
 
+<<<<<<< HEAD
 function normalizeActiveFilters(filters) {
   return Object.entries(filters).flatMap(([field, value]) => {
     const selected = normalizeFilterSelection(value);
@@ -1106,6 +993,14 @@ function filterRecords(records, filters) {
     return records;
   }
   return records.filter((record) => activeFilters.every(({ field, selected }) => {
+=======
+function filterRecords(records, filters) {
+  return records.filter((record) => Object.entries(filters).every(([field, value]) => {
+    const selected = normalizeFilterSelection(value);
+    if (!selected.length) {
+      return true;
+    }
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
     const recordValue = recordFilterValue(record, field);
     if (recordValue === null) {
       return false;
@@ -1564,11 +1459,85 @@ function timeExtentFromOmniSeries(seriesList) {
   return { minT, maxT };
 }
 
-function buildOmniChartOption(metricGroup, records, groupFields, chartPointPerDay) {
+/** First point meta of a line series (carries scenario fields like max_concurrency). */
+function omniSeriesScenarioMeta(series) {
+  const point = (series.data || []).find((p) => p?.meta);
+  return point?.meta || {};
+}
+
+function compareNullableNumber(a, b, direction = "asc") {
+  const aMissing = a === null;
+  const bMissing = b === null;
+  if (aMissing || bMissing) {
+    if (aMissing && bMissing) {
+      return 0;
+    }
+    return aMissing ? 1 : -1;
+  }
+  if (a === b) {
+    return 0;
+  }
+  return direction === "desc" ? b - a : a - b;
+}
+
+/**
+ * Pick at most `cap` default-visible series, spread across the three scenarios that
+ * matter for capacity planning: long sequence (large input len), high throughput
+ * (high concurrency) and low latency (low concurrency). Remaining slots are filled
+ * in original order; everything else stays hidden until "Show all" is clicked.
+ */
+function selectDefaultVisibleSeriesKeys(lineSeries, cap) {
+  const entries = lineSeries.map((s, index) => {
+    const meta = omniSeriesScenarioMeta(s);
+    const conc = Number(meta.max_concurrency);
+    const inputLen = Number(meta.random_input_len);
+    return {
+      key: s.__omniSeriesKey,
+      index,
+      conc: Number.isFinite(conc) ? conc : null,
+      inputLen: Number.isFinite(inputLen) ? inputLen : null,
+    };
+  });
+  const isLongSequence = (entry) => entry.inputLen !== null && entry.inputLen >= 1000;
+  const longSeq = entries.filter(isLongSequence)
+    .sort((a, b) => (
+      compareNullableNumber(a.inputLen, b.inputLen, "desc")
+      || compareNullableNumber(a.conc, b.conc, "desc")
+      || a.index - b.index
+    ));
+  const shortSeq = entries.filter((entry) => !isLongSequence(entry));
+  const highThroughput = [...shortSeq].sort((a, b) => (
+    compareNullableNumber(a.conc, b.conc, "desc") || a.index - b.index
+  ));
+  const lowLatency = [...shortSeq].sort((a, b) => (
+    compareNullableNumber(a.conc, b.conc, "asc") || a.index - b.index
+  ));
+
+  const selected = new Set();
+  const perScenario = Math.max(1, Math.floor(cap / 3));
+  [longSeq, highThroughput, lowLatency].forEach((bucket) => {
+    let taken = 0;
+    bucket.forEach((entry) => {
+      if (taken < perScenario && selected.size < cap && !selected.has(entry.key)) {
+        selected.add(entry.key);
+        taken += 1;
+      }
+    });
+  });
+  entries.forEach((entry) => {
+    if (selected.size < cap) {
+      selected.add(entry.key);
+    }
+  });
+  return selected;
+}
+
+function buildOmniChartOption(metricGroup, records, groupFields, chartPointPerDay, visibleKeys) {
   const opts = { pointPerDay: chartPointPerDay !== false };
-  const series = applyOmniLineSeriesColors(
+  const rawSeries = applyOmniLineSeriesColors(
     metricGroup.metrics.flatMap((metric) => buildOmniMetricSeries(records, metric, groupFields, opts)),
   );
+  const series = visibleKeys ? rawSeries.filter((s) => visibleKeys.has(s.__omniSeriesKey)) : rawSeries;
   const maxPoints = series.reduce((maxCount, s) => {
     if (s.__omniBadMarkers) {
       return maxCount;
@@ -1677,11 +1646,16 @@ function bindOmniFilterOutsideClick() {
     return;
   }
   _omniFilterOutsideClickBound = true;
+<<<<<<< HEAD
   document.addEventListener("click", (event) => {
     document.querySelectorAll(".omni-filter__multiselect.is-open").forEach((multiselect) => {
       if (multiselect.contains(event.target)) {
         return;
       }
+=======
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".omni-filter__multiselect.is-open").forEach((multiselect) => {
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
       multiselect.classList.remove("is-open");
       multiselect.querySelector(".omni-filter__trigger")?.setAttribute("aria-expanded", "false");
     });
@@ -1695,6 +1669,7 @@ function closeOmniFilterDropdowns(container) {
   });
 }
 
+<<<<<<< HEAD
 function updateOmniFilterTriggerLabel(root, field) {
   const wrap = root.querySelector(`[data-omni-filter-wrap="${field}"]`);
   if (!wrap) {
@@ -1775,15 +1750,37 @@ function bindOmniFilterBarEvents(container, root) {
 }
 
 function initOmniFilterBar(payload, root) {
+=======
+function getOpenOmniFilterField(root) {
+  const open = root.querySelector(".omni-filter__multiselect.is-open");
+  if (!open) {
+    return null;
+  }
+  return open.closest("[data-omni-filter-wrap]")?.dataset.omniFilterWrap ?? null;
+}
+
+function renderOmniFilterBar(payload, filters, root, options = {}) {
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
   const container = root.querySelector("[data-omni-history-filters]");
   if (!container) {
     return;
   }
+  bindOmniFilterOutsideClick();
+  const openField = options.openField ?? null;
   const hid = ensureHistoryInstanceId(root);
+  const dateRange = currentOmniDateRange(root);
   container.innerHTML = payload.filters.map((field) => {
+<<<<<<< HEAD
     const options = (payload.filter_options?.[field] || [])
       .map((option) => {
         const value = String(option);
+=======
+    const selected = new Set(normalizeFilterSelection(filters[field]));
+    const options = (payload.filter_options?.[field] || [])
+      .map((option) => {
+        const value = String(option);
+        const checked = selected.has(value) ? " checked" : "";
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
         return `
           <label class="omni-filter__option">
             <input
@@ -1791,12 +1788,20 @@ function initOmniFilterBar(payload, root) {
               class="omni-filter__checkbox"
               data-omni-filter-option="${field}"
               value="${escapeHtml(value)}"
+<<<<<<< HEAD
+=======
+              ${checked}
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
             >
             <span class="omni-filter__option-label">${escapeHtml(value)}</span>
           </label>
         `;
       })
       .join("");
+<<<<<<< HEAD
+=======
+    const triggerLabel = formatFilterTriggerLabel([...selected]);
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
     const dropdownId = `omni-filter-${field}-${hid}`;
     return `
       <div class="omni-filter" data-omni-filter-wrap="${field}">
@@ -1806,24 +1811,97 @@ function initOmniFilterBar(payload, root) {
             type="button"
             class="omni-filter__trigger"
             aria-expanded="false"
+<<<<<<< HEAD
             aria-haspopup="true"
             aria-controls="${dropdownId}"
             aria-labelledby="${dropdownId}-label"
             data-omni-filter-trigger="${field}"
           >
             <span class="omni-filter__trigger-text">All</span>
+=======
+            aria-haspopup="listbox"
+            aria-labelledby="${dropdownId}-label"
+            data-omni-filter-trigger="${field}"
+          >
+            <span class="omni-filter__trigger-text">${escapeHtml(triggerLabel)}</span>
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
           </button>
           <div
             class="omni-filter__dropdown"
             id="${dropdownId}"
+<<<<<<< HEAD
+=======
+            role="listbox"
+            aria-multiselectable="true"
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
           >${options || `<p class="omni-filter__empty">No options</p>`}</div>
         </div>
       </div>
     `;
   }).join("") + `
+    <label class="omni-filter">
+      <span class="omni-filter__label">From Date</span>
+      <input class="omni-filter__input" type="date" data-omni-date-range="from" value="${escapeHtml(dateRange.from)}">
+    </label>
+    <label class="omni-filter">
+      <span class="omni-filter__label">To Date</span>
+      <input class="omni-filter__input" type="date" data-omni-date-range="to" value="${escapeHtml(dateRange.to)}">
+    </label>
     <button type="button" class="omni-filter__reset" data-omni-filter-reset>Reset filters</button>
   `;
+<<<<<<< HEAD
   bindOmniFilterBarEvents(container, root);
+=======
+
+  container.querySelectorAll("[data-omni-filter-trigger]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const multiselect = button.closest(".omni-filter__multiselect");
+      const wasOpen = multiselect.classList.contains("is-open");
+      closeOmniFilterDropdowns(container);
+      if (!wasOpen) {
+        multiselect.classList.add("is-open");
+        button.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+  container.querySelectorAll(".omni-filter__dropdown").forEach((dropdown) => {
+    dropdown.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+  });
+  container.querySelectorAll("[data-omni-filter-option]").forEach((input) => {
+    input.addEventListener("change", () => {
+      renderQwen3OmniHistory(payload, root, {
+        preserveOpenFilter: input.dataset.omniFilterOption,
+      });
+    });
+  });
+  container.querySelectorAll("[data-omni-date-range]").forEach((input) => {
+    input.addEventListener("change", () => {
+      renderQwen3OmniHistory(payload, root);
+    });
+  });
+  container.querySelector("[data-omni-filter-reset]")?.addEventListener("click", () => {
+    container.querySelectorAll("[data-omni-filter-option]").forEach((input) => {
+      input.checked = false;
+    });
+    container.querySelectorAll("[data-omni-date-range]").forEach((input) => {
+      input.value = "";
+    });
+    renderQwen3OmniHistory(payload, root);
+  });
+
+  if (openField) {
+    const wrap = container.querySelector(`[data-omni-filter-wrap="${openField}"]`);
+    const multiselect = wrap?.querySelector(".omni-filter__multiselect");
+    const trigger = multiselect?.querySelector(".omni-filter__trigger");
+    if (multiselect && trigger) {
+      multiselect.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+  }
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
 }
 
 function currentOmniFilters(payload, root) {
@@ -1838,6 +1916,32 @@ function currentOmniFilters(payload, root) {
       .filter(Boolean);
     return acc;
   }, {});
+}
+
+function currentOmniDateRange(root) {
+  const read = (kind) => root.querySelector(`[data-omni-date-range="${kind}"]`)?.value?.trim() || "";
+  return { from: read("from"), to: read("to") };
+}
+
+/** Keep records whose calendar day falls inside the inclusive [from, to] range. */
+function filterRecordsByDateRange(records, dateRange) {
+  const { from, to } = dateRange || {};
+  if (!from && !to) {
+    return records;
+  }
+  return records.filter((record) => {
+    const day = recordCalendarDay(record);
+    if (!day) {
+      return false;
+    }
+    if (from && day < from) {
+      return false;
+    }
+    if (to && day > to) {
+      return false;
+    }
+    return true;
+  });
 }
 
 function renderOmniSummary(records, groupFields, root) {
@@ -1904,11 +2008,48 @@ function renderOmniTable(payload, records, root) {
   container.innerHTML = `<div class="omni-history-by-date">${blocks}</div>`;
 }
 
-function renderOmniChartSection(section, metricGroup, records, groupFields, chartPointPerDay) {
+/** Series values pivoted to a day-by-series table (InferenceX-style "Table" view). */
+function buildOmniSeriesTableHtml(lineSeries, visibleKeySet) {
+  const visible = lineSeries.filter((s) => visibleKeySet.has(s.__omniSeriesKey));
+  if (visible.length === 0) {
+    return '<div class="omni-empty-state">没有可见的数据系列。</div>';
+  }
+  const days = [...new Set(
+    visible.flatMap((s) => (s.data || [])
+      .filter((p) => p?.meta && !p.meta.missing_day && isNumeric(p.meta.actual_metric_y))
+      .map((p) => String(p.value?.[0] || "").slice(0, 10))),
+  )].filter(Boolean).sort();
+  const header = ['<th scope="col">Series</th>', ...days.map((day) => `<th scope="col">${escapeHtml(day)}</th>`)].join("");
+  const rows = visible.map((s) => {
+    const byDay = new Map((s.data || [])
+      .filter((p) => p?.meta && !p.meta.missing_day)
+      .map((p) => [String(p.value?.[0] || "").slice(0, 10), p.meta.actual_metric_y]));
+    const cells = days.map((day) => {
+      const value = byDay.get(day);
+      return `<td class="omni-history-table__cell omni-history-table__cell--numeric">${isNumeric(value) ? formatMetricValue(value) : "--"}</td>`;
+    }).join("");
+    return `<tr><td class="omni-history-table__cell omni-series-table__name"><span class="omni-series-dot" style="background:${escapeHtml(s.color || "#888")}"></span>${escapeHtml(s.name)}</td>${cells}</tr>`;
+  }).join("");
+  return `
+    <div class="omni-history-table__wrap">
+      <table class="omni-history-table">
+        <thead><tr>${header}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderOmniChartSection(section, metricGroup, records, groupFields, chartPointPerDay, seriesCap) {
   const opts = { pointPerDay: chartPointPerDay !== false };
   const chartRoot = document.createElement("section");
   chartRoot.className = "omni-chart-card";
-  const allSeries = metricGroup.metrics.flatMap((metric) => buildOmniMetricSeries(records, metric, groupFields, opts));
+  // Colors assigned on the full list so they stay stable across visibility changes.
+  const allSeries = applyOmniLineSeriesColors(
+    metricGroup.metrics.flatMap((metric) => buildOmniMetricSeries(records, metric, groupFields, opts)),
+  );
+  const lineSeries = allSeries.filter((s) => !s.__omniBadMarkers);
+  const capped = Number.isFinite(seriesCap) && seriesCap > 0 && lineSeries.length > seriesCap;
 
   chartRoot.innerHTML = `
     <div class="omni-chart-card__header">
@@ -1916,11 +2057,17 @@ function renderOmniChartSection(section, metricGroup, records, groupFields, char
         <h3>${escapeHtml(metricGroup.title)}</h3>
         <p>${metricGroup.metrics.map(humanizeField).join(" · ")}</p>
       </div>
-      <span class="omni-chart-card__badge">${allSeries.length} series</span>
+      <span class="omni-chart-card__badge" data-omni-series-badge></span>
+      <div class="omni-view-toggle" data-omni-view-toggle>
+        <button type="button" class="omni-view-toggle__btn omni-view-toggle__btn--active" data-omni-view="chart">Chart</button>
+        <button type="button" class="omni-view-toggle__btn" data-omni-view="table">Table</button>
+      </div>
     </div>
   `;
 
-  if (allSeries.length === 0) {
+  if (lineSeries.length === 0) {
+    chartRoot.querySelector("[data-omni-view-toggle]")?.remove();
+    chartRoot.querySelector("[data-omni-series-badge]")?.remove();
     const empty = document.createElement("div");
     empty.className = "omni-empty-state";
     empty.textContent = "当前筛选条件下没有数据。";
@@ -1931,9 +2078,115 @@ function renderOmniChartSection(section, metricGroup, records, groupFields, char
 
   const chart = document.createElement("div");
   chart.className = "chart-frame omni-chart-frame";
-  chartRoot.append(chart);
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "omni-series-table";
+  tableWrap.hidden = true;
+  chartRoot.append(chart, tableWrap);
   section.append(chartRoot);
-  setChart(chart, buildOmniChartOption(metricGroup, records, groupFields, chartPointPerDay));
+
+  // Visibility state: capped charts start with representative scenarios only.
+  const allKeys = lineSeries.map((s) => s.__omniSeriesKey);
+  const defaultVisible = capped ? selectDefaultVisibleSeriesKeys(lineSeries, seriesCap) : new Set(allKeys);
+  const hiddenKeys = new Set(allKeys.filter((key) => !defaultVisible.has(key)));
+  let view = "chart";
+
+  const badge = chartRoot.querySelector("[data-omni-series-badge]");
+  const legend = document.createElement("details");
+  legend.className = "omni-series-legend";
+  legend.innerHTML = `
+    <summary data-omni-legend-summary></summary>
+    <div class="omni-series-legend__tools">
+      <input type="search" class="omni-series-legend__search" placeholder="Search series..." data-omni-legend-search>
+      <button type="button" class="omni-series-legend__btn" data-omni-legend-all>All</button>
+      <button type="button" class="omni-series-legend__btn" data-omni-legend-none>None</button>
+      ${capped ? '<button type="button" class="omni-series-legend__btn" data-omni-legend-default>Key scenarios</button>' : ""}
+    </div>
+    <ul class="omni-series-legend__list">
+      ${lineSeries.map((s) => `
+        <li class="omni-series-legend__item" data-omni-legend-key="${escapeHtml(s.__omniSeriesKey)}">
+          <span class="omni-series-dot" style="background:${escapeHtml(s.color || "#888")}"></span>
+          <span class="omni-series-legend__name">${escapeHtml(s.name)}</span>
+        </li>
+      `).join("")}
+    </ul>
+  `;
+  chartRoot.append(legend);
+
+  const visibleKeySet = () => new Set(allKeys.filter((key) => !hiddenKeys.has(key)));
+  const applyView = () => {
+    const visibleCount = allKeys.length - hiddenKeys.size;
+    badge.textContent = hiddenKeys.size === 0
+      ? `${allKeys.length} series`
+      : `${visibleCount} of ${allKeys.length} series`;
+    legend.querySelector("[data-omni-legend-summary]").textContent =
+      `Legend (${visibleCount}/${allKeys.length} visible)`;
+    legend.querySelectorAll("[data-omni-legend-key]").forEach((item) => {
+      item.classList.toggle("omni-series-legend__item--hidden", hiddenKeys.has(item.dataset.omniLegendKey));
+    });
+    if (view === "chart") {
+      chart.hidden = false;
+      tableWrap.hidden = true;
+      setChart(chart, buildOmniChartOption(
+        metricGroup, records, groupFields, chartPointPerDay,
+        hiddenKeys.size === 0 ? null : visibleKeySet(),
+      ));
+      charts.get(chart)?.resize();
+    } else {
+      chart.hidden = true;
+      tableWrap.hidden = false;
+      tableWrap.innerHTML = buildOmniSeriesTableHtml(lineSeries, visibleKeySet());
+    }
+    chartRoot.querySelectorAll("[data-omni-view]").forEach((btn) => {
+      btn.classList.toggle("omni-view-toggle__btn--active", btn.dataset.omniView === view);
+    });
+  };
+
+  chartRoot.querySelector("[data-omni-view-toggle]").addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-omni-view]");
+    if (btn && btn.dataset.omniView !== view) {
+      view = btn.dataset.omniView;
+      applyView();
+    }
+  });
+  legend.querySelector("[data-omni-legend-search]").addEventListener("input", (event) => {
+    const query = event.target.value.trim().toLowerCase();
+    legend.querySelectorAll("[data-omni-legend-key]").forEach((item) => {
+      const name = item.querySelector(".omni-series-legend__name")?.textContent?.toLowerCase() || "";
+      item.hidden = Boolean(query) && !name.includes(query);
+    });
+  });
+  legend.querySelector("[data-omni-legend-all]").addEventListener("click", () => {
+    hiddenKeys.clear();
+    applyView();
+  });
+  legend.querySelector("[data-omni-legend-none]").addEventListener("click", () => {
+    allKeys.forEach((key) => hiddenKeys.add(key));
+    applyView();
+  });
+  legend.querySelector("[data-omni-legend-default]")?.addEventListener("click", () => {
+    hiddenKeys.clear();
+    allKeys.forEach((key) => {
+      if (!defaultVisible.has(key)) {
+        hiddenKeys.add(key);
+      }
+    });
+    applyView();
+  });
+  legend.querySelector(".omni-series-legend__list").addEventListener("click", (event) => {
+    const item = event.target.closest("[data-omni-legend-key]");
+    if (!item) {
+      return;
+    }
+    const key = item.dataset.omniLegendKey;
+    if (hiddenKeys.has(key)) {
+      hiddenKeys.delete(key);
+    } else {
+      hiddenKeys.add(key);
+    }
+    applyView();
+  });
+
+  applyView();
 }
 
 function parseIsoDate(value) {
@@ -1964,7 +2217,7 @@ function filterRecordsByRecentDays(records, days) {
   });
 }
 
-function ensureOmniTrendRangeControl(root, onChange) {
+function ensureOmniTrendRangeControl(root, onChange, disabled = false) {
   const container = root.querySelector("[data-omni-history-charts]");
   if (!container) {
     return 7;
@@ -2000,9 +2253,27 @@ function ensureOmniTrendRangeControl(root, onChange) {
 
   control.querySelectorAll("[data-omni-trend-days]").forEach((btn) => {
     const days = Number(btn.dataset.omniTrendDays || "7");
-    btn.classList.toggle("omni-chart-range__btn--active", days === activeDays);
+    btn.classList.toggle("omni-chart-range__btn--active", !disabled && days === activeDays);
+    btn.disabled = disabled;
+    btn.title = disabled ? "Disabled while a From/To date filter is active" : "";
   });
   return activeDays;
+}
+
+/** Split metric groups into always-visible and collapsed ("More charts") sets.
+ * Groups flagged `collapsed: true` in config drive the split; without flags,
+ * fall back to the historical first-N behavior. */
+function splitOmniMetricGroups(metricGroups) {
+  if (metricGroups.some((group) => group.collapsed === true)) {
+    return {
+      primary: metricGroups.filter((group) => !group.collapsed),
+      extra: metricGroups.filter((group) => group.collapsed),
+    };
+  }
+  return {
+    primary: metricGroups.slice(0, OMNI_HISTORY_PRIMARY_CHART_COUNT),
+    extra: metricGroups.slice(OMNI_HISTORY_PRIMARY_CHART_COUNT),
+  };
 }
 
 function renderOmniCharts(payload, records, root, renderFn) {
@@ -2010,20 +2281,26 @@ function renderOmniCharts(payload, records, root, renderFn) {
   if (!container) {
     return;
   }
-  const selectedDays = ensureOmniTrendRangeControl(root, () => renderFn(payload, root));
-  const chartRecords = filterRecordsByRecentDays(records, selectedDays);
+  const dateRange = currentOmniDateRange(root);
+  const hasDateRange = Boolean(dateRange.from || dateRange.to);
+  const selectedDays = ensureOmniTrendRangeControl(root, () => renderFn(payload, root), hasDateRange);
+  // An explicit date range replaces the relative trend window.
+  const chartRecords = hasDateRange ? records : filterRecordsByRecentDays(records, selectedDays);
   const chartPointPerDay = payload.chart_point_per_day !== false;
+  const seriesCap = Number(payload.default_visible_series) || null;
   disposeChartsWithin(container);
   container.innerHTML = "";
+
+  const { primary: primaryGroups, extra: extraGroups } = splitOmniMetricGroups(payload.metric_groups);
 
   const primary = document.createElement("div");
   primary.className = "omni-chart-grid";
   container.append(primary);
-  payload.metric_groups.slice(0, OMNI_HISTORY_PRIMARY_CHART_COUNT).forEach((metricGroup) => {
-    renderOmniChartSection(primary, metricGroup, chartRecords, payload.group_fields, chartPointPerDay);
+  primaryGroups.forEach((metricGroup) => {
+    renderOmniChartSection(primary, metricGroup, chartRecords, payload.group_fields, chartPointPerDay, seriesCap);
   });
 
-  if (payload.metric_groups.length > OMNI_HISTORY_PRIMARY_CHART_COUNT) {
+  if (extraGroups.length > 0) {
     const details = document.createElement("details");
     details.className = "omni-more-charts";
     details.innerHTML = '<summary>More charts</summary>';
@@ -2036,8 +2313,8 @@ function renderOmniCharts(payload, records, root, renderFn) {
       if (extraRendered) {
         return;
       }
-      payload.metric_groups.slice(OMNI_HISTORY_PRIMARY_CHART_COUNT).forEach((metricGroup) => {
-        renderOmniChartSection(extra, metricGroup, chartRecords, payload.group_fields, chartPointPerDay);
+      extraGroups.forEach((metricGroup) => {
+        renderOmniChartSection(extra, metricGroup, chartRecords, payload.group_fields, chartPointPerDay, seriesCap);
       });
       extraRendered = true;
     };
@@ -2049,6 +2326,7 @@ function renderOmniCharts(payload, records, root, renderFn) {
   }
 }
 
+<<<<<<< HEAD
 function renderQwen3OmniHistory(payload, root) {
   setOmniHistoryPayload(root, payload);
   const filterContainer = root.querySelector("[data-omni-history-filters]");
@@ -2057,6 +2335,20 @@ function renderQwen3OmniHistory(payload, root) {
     filterContainer.dataset.omniFilterBarReady = "1";
   }
   renderOmniHistoryViews(payload, root);
+=======
+function renderQwen3OmniHistory(payload, root, options = {}) {
+  const filters = currentOmniFilters(payload, root);
+  const dateRange = currentOmniDateRange(root);
+  const openField = options.preserveOpenFilter ?? getOpenOmniFilterField(root);
+  renderOmniFilterBar(payload, filters, root, { openField });
+  const filtered = filterRecordsByDateRange(
+    sortRecordsByTimeDesc(filterRecords(payload.records, filters)),
+    dateRange,
+  );
+  renderOmniSummary(filtered, payload.group_fields, root);
+  renderOmniCharts(payload, filtered, root, renderQwen3OmniHistory);
+  renderOmniTable(payload, filtered, root);
+>>>>>>> d949b7d96829688b38a496fd832960a937c00af1
 }
 
 async function loadQwen3OmniHistory() {
@@ -2101,12 +2393,70 @@ function observeColorScheme() {
   observer.observe(target, { attributes: true, attributeFilter: ["data-md-color-scheme"] });
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  ensureModelsHoverDropdown();
-  ensureTechnicalRail();
-  renderRailModelNodes();
-  bindRangePicker();
-  bindRailSpy();
-  observeColorScheme();
-  await Promise.all([loadHealth(), loadHardwareStatus(), reloadCharts(), loadQwen3OmniHistory()]);
-});
+/**
+ * InferenceX-style page view tabs. Markdown wraps page regions in
+ * `<div data-omni-tab="Performance">…</div>`; the nav (`[data-omni-page-tabs]`)
+ * is filled with one button per region, in document order.
+ */
+function initOmniPageTabs() {
+  const nav = document.querySelector("[data-omni-page-tabs]");
+  const panels = [...document.querySelectorAll("[data-omni-tab]")];
+  if (!nav || panels.length === 0) {
+    return;
+  }
+  const found = [...new Set(panels.map((panel) => panel.dataset.omniTab).filter(Boolean))];
+  // Optional explicit order: <nav data-omni-page-tabs="Performance,Accuracy,History">.
+  const explicit = (nav.dataset.omniPageTabs || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const names = explicit.length
+    ? [...explicit.filter((name) => found.includes(name)), ...found.filter((name) => !explicit.includes(name))]
+    : found;
+  if (names.length < 2) {
+    nav.hidden = true;
+    return;
+  }
+  nav.innerHTML = names.map((name) => `
+    <button type="button" class="omni-page-tabs__btn" data-omni-tab-target="${escapeHtml(name)}">${escapeHtml(name)}</button>
+  `).join("");
+
+  const activate = (name) => {
+    nav.querySelectorAll("[data-omni-tab-target]").forEach((btn) => {
+      btn.classList.toggle("omni-page-tabs__btn--active", btn.dataset.omniTabTarget === name);
+    });
+    panels.forEach((panel) => {
+      panel.hidden = panel.dataset.omniTab !== name;
+    });
+    // Charts initialized while hidden have zero size; re-measure the visible ones.
+    charts.forEach((instance, container) => {
+      if (container.offsetParent !== null) {
+        instance.resize();
+      }
+    });
+  };
+  nav.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-omni-tab-target]");
+    if (btn) {
+      activate(btn.dataset.omniTabTarget);
+    }
+  });
+  activate(names[0]);
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    buildOmniChartOption,
+    compareNullableNumber,
+    selectDefaultVisibleSeriesKeys,
+  };
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", async () => {
+    ensureTechnicalRail();
+    renderRailModelNodes();
+    bindRangePicker();
+    bindRailSpy();
+    observeColorScheme();
+    initOmniPageTabs();
+    await Promise.all([loadHealth(), loadHardwareStatus(), reloadCharts(), loadQwen3OmniHistory()]);
+  });
+}

@@ -3615,62 +3615,6 @@
       ],
       "title": "[Bugfix] Remove duplicated config keyword max batch size (#1851)",
       "url": "https://github.com/vllm-project/vllm-omni/pull/1851"
-    },
-    {
-      "author": "JuboYu",
-      "merged_at": "2026-03-19T22:58:29+08:00",
-      "number": 1470,
-      "platform_paths": [
-        "vllm_omni/engine/async_omni_engine.py"
-      ],
-      "title": "Int8 Quantization Support for DiT (Z-Image & Qwen-Image) (#1470)",
-      "url": "https://github.com/vllm-project/vllm-omni/pull/1470"
-    },
-    {
-      "author": "Hui.",
-      "merged_at": "2026-03-19T18:57:04+08:00",
-      "number": 2007,
-      "platform_paths": [
-        "vllm_omni/entrypoints/openai/serving_chat.py"
-      ],
-      "title": "[Bugfix]Fix bug of online server can not return mutli images (#2007)",
-      "url": "https://github.com/vllm-project/vllm-omni/pull/2007"
-    },
-    {
-      "author": "Samit",
-      "merged_at": "2026-03-19T16:00:26+08:00",
-      "number": 1979,
-      "platform_paths": [
-        "vllm_omni/entrypoints/async_omni_diffusion.py",
-        "vllm_omni/entrypoints/openai/serving_chat.py"
-      ],
-      "title": "[Bugfix] Fix config misalignment between offline and online diffusion inference (Wan2.2, Qwen-Image series) (#1979)",
-      "url": "https://github.com/vllm-project/vllm-omni/pull/1979"
-    },
-    {
-      "author": "Chen-Yo Sun",
-      "merged_at": "2026-03-19T13:02:11-07:00",
-      "number": 1803,
-      "platform_paths": [
-        "vllm_omni/engine/arg_utils.py",
-        "vllm_omni/entrypoints/openai/serving_speech.py"
-      ],
-      "title": "[Model] Add Voxtral TTS model (#1803)",
-      "url": "https://github.com/vllm-project/vllm-omni/pull/1803"
-    },
-    {
-      "author": "dengyunyang",
-      "merged_at": "2026-03-19T12:26:12+08:00",
-      "number": 1757,
-      "platform_paths": [
-        "vllm_omni/engine/async_omni_engine.py",
-        "vllm_omni/entrypoints/cli/serve.py",
-        "vllm_omni/entrypoints/omni_base.py",
-        "vllm_omni/entrypoints/openai/serving_chat.py",
-        "vllm_omni/outputs.py"
-      ],
-      "title": "[Performance] diffusion timing (#1757)",
-      "url": "https://github.com/vllm-project/vllm-omni/pull/1757"
     }
   ]
 }

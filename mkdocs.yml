@@ -8,7 +8,8 @@ theme:
   name: material
   custom_dir: docs/overrides
   features:
-    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
   palette:
     - scheme: default
       primary: blue grey
@@ -42,23 +43,12 @@ nav:
       - BAGEL: models/bagel.md
       - VoxCPM2: models/voxcpm2.md
   - Alerts: alerts.md
+  # Individual report pages are intentionally not listed: docs/reports/index.md is
+  # regenerated at build time (see scripts/mkdocs_hooks.py) and links every report,
+  # so external repos can drop in YYYY-MM-DD.md files without touching this nav.
   - Reports:
       - Test Report: reports/nightly-test-report.md
       - Archive: reports/index.md
-      - 2026-03-14: reports/2026-03-14.md
-      - 2026-03-13: reports/2026-03-13.md
-      - 2026-03-12: reports/2026-03-12.md
-      - 2026-03-11: reports/2026-03-11.md
-      - 2026-03-10: reports/2026-03-10.md
-      - 2026-03-09: reports/2026-03-09.md
-      - 2026-03-08: reports/2026-03-08.md
-      - 2026-03-07: reports/2026-03-07.md
-  - Plans:
-      - PRD: plans/2026-03-13-prd.md
-      - Design: plans/2025-03-13-kanban-design.md
-      - TDD Plan: plans/2025-03-13-tdd-plan-design.md
-      - Implementation Plan: plans/2026-03-13-implementation-plan.md
-  - Contributing: contributing.md
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js
   - assets/js/render_charts.js

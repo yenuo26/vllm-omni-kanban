@@ -116,6 +116,7 @@
   "kanban_pages": {
     "qwen3_omni_history": {
       "source_dir": "qwen3omni",
+      "default_visible_series": 9,
       "filters": [
         "test_name",
         "dataset_name",
@@ -169,16 +170,6 @@
       ],
       "metric_groups": [
         {
-          "id": "output_throughput",
-          "title": "Output Throughput",
-          "metrics": ["output_throughput"]
-        },
-        {
-          "id": "total_token_throughput",
-          "title": "Total Token Throughput",
-          "metrics": ["total_token_throughput"]
-        },
-        {
           "id": "ttft",
           "title": "TTFT",
           "metrics": ["mean_ttft_ms"]
@@ -187,16 +178,6 @@
           "id": "tpot",
           "title": "TPOT",
           "metrics": ["mean_tpot_ms"]
-        },
-        {
-          "id": "itl",
-          "title": "ITL",
-          "metrics": ["mean_itl_ms"]
-        },
-        {
-          "id": "e2el",
-          "title": "E2EL",
-          "metrics": ["mean_e2el_ms"]
         },
         {
           "id": "audio_rtf",
@@ -209,9 +190,34 @@
           "metrics": ["mean_audio_ttfp_ms"]
         },
         {
+          "id": "output_throughput",
+          "title": "Output Throughput",
+          "metrics": ["output_throughput"],
+          "collapsed": true
+        },
+        {
+          "id": "total_token_throughput",
+          "title": "Total Token Throughput",
+          "metrics": ["total_token_throughput"],
+          "collapsed": true
+        },
+        {
+          "id": "itl",
+          "title": "ITL",
+          "metrics": ["mean_itl_ms"],
+          "collapsed": true
+        },
+        {
+          "id": "e2el",
+          "title": "E2EL",
+          "metrics": ["mean_e2el_ms"],
+          "collapsed": true
+        },
+        {
           "id": "audio_duration",
           "title": "Audio Duration",
-          "metrics": ["mean_audio_duration_s"]
+          "metrics": ["mean_audio_duration_s"],
+          "collapsed": true
         }
       ]
     },
@@ -334,7 +340,7 @@
         },
         {
           "id": "peak_memory",
-          "title": "Peak Memory",
+          "title": "Peak Memory (GB)",
           "metrics": ["peak_memory_gb"]
         }
       ]
@@ -387,7 +393,7 @@
         },
         {
           "id": "peak_memory",
-          "title": "Peak Memory",
+          "title": "Peak Memory (GB)",
           "metrics": ["peak_memory_gb"]
         }
       ]
@@ -441,7 +447,7 @@
         },
         {
           "id": "peak_memory",
-          "title": "Peak Memory",
+          "title": "Peak Memory (GB)",
           "metrics": ["peak_memory_gb"]
         }
       ]
@@ -495,7 +501,7 @@
         },
         {
           "id": "peak_memory",
-          "title": "Peak Memory",
+          "title": "Peak Memory (GB)",
           "metrics": ["peak_memory_gb"]
         }
       ]
@@ -549,7 +555,7 @@
         },
         {
           "id": "peak_memory",
-          "title": "Peak Memory",
+          "title": "Peak Memory (GB)",
           "metrics": ["peak_memory_gb"]
         }
       ]
@@ -602,7 +608,7 @@
         },
         {
           "id": "peak_memory",
-          "title": "Peak Memory",
+          "title": "Peak Memory (GB)",
           "metrics": ["peak_memory_gb"]
         }
       ]
@@ -655,7 +661,7 @@
         },
         {
           "id": "peak_memory",
-          "title": "Peak Memory",
+          "title": "Peak Memory (GB)",
           "metrics": ["peak_memory_gb"]
         }
       ]
@@ -710,9 +716,16 @@
         },
         {
           "id": "peak_memory",
-          "title": "Peak Memory",
+          "title": "Peak Memory (GB)",
           "metrics": ["peak_memory_gb"]
         }
+      ]
+    },
+    "hunyuan_image3_accuracy": {
+      "chart_point_per_day": true,
+      "filters": [
+        "test_file",
+        "test_name"
       ]
     },
     "voxcpm2_history": {

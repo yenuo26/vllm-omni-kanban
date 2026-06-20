@@ -5,35 +5,9 @@ hide:
 
 # vLLM-Omni Kanban
 
-<div data-dashboard-home hidden></div>
-
 <p class="dashboard-intro">
-This dashboard tracks one daily snapshot per model and hardware combination for vLLM-omni multimodal CI. Use the homepage for fleet health and pass-rate rollups, then open the dedicated model pages for metric-specific performance analysis.
+This dashboard tracks one daily snapshot per model and hardware combination for vLLM-omni multimodal CI. Open the dedicated model pages for metric-specific performance analysis.
 </p>
-
-<section class="dashboard-toolbar">
-<div class="health-banner" data-summary-src="assets/charts/summary.json">
-  <div class="health-banner__state">
-    <span class="health-banner__dot" data-health-dot></span>
-    <div>
-      <p class="health-banner__eyebrow">Global Health</p>
-      <strong class="health-banner__headline" data-health-title>Loading status...</strong>
-      <p class="health-banner__meta" data-health-meta>Checking the latest snapshot and active alerts.</p>
-    </div>
-  </div>
-  <a class="health-banner__link" href="alerts/">View Alerts</a>
-</div>
-
-<label class="time-range-control" for="time-range">
-  <span class="time-range-control__label">Time Window</span>
-  <select id="time-range" data-time-range>
-    <option value="1d">24h</option>
-    <option value="7d" selected>7 days</option>
-    <option value="30d">30 days</option>
-  </select>
-  <span class="time-range-control__hint">Applies to all trend charts on this page.</span>
-</label>
-</section>
 
 ## Model Performance
 
@@ -106,22 +80,6 @@ This dashboard tracks one daily snapshot per model and hardware combination for 
 </div>
 
 </details>
-
-## Pass Rate
-
-<p class="section-note">Use this section to sanity-check overall health before drilling into the model-specific dashboards.</p>
-
-<div class="follow-up-grid">
-<div class="chart-card">
-<h4>Pass Rate Trend</h4>
-<div class="chart-frame" id="chart-pass-rate" data-chart-base="pass_rate_trend"></div>
-</div>
-</div>
-
-<div class="standalone-panel">
-<h4>Pass Rate Heatmap</h4>
-<div class="chart-frame chart-frame-tall" id="chart-heatmap" data-chart-src="assets/charts/pass_rate_heatmap.json"></div>
-</div>
 
 ## Recent Alerts
 

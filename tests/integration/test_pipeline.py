@@ -36,5 +36,5 @@ def test_full_pipeline_happy_path(repo_root: Path, sample_daily_batch: dict, tmp
     assert charts.returncode == 0
     assert alerts.returncode == 0
     assert (repo_root / "docs" / "reports" / "2026-03-14.md").exists()
-    assert (repo_root / "docs" / "assets" / "charts" / "pass_rate_heatmap.json").exists()
+    assert (repo_root / "docs" / "assets" / "charts" / "hardware_status.json").exists()
     assert (repo_root / "data" / "alerts.json").exists()

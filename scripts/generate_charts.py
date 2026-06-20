@@ -4,7 +4,6 @@ import json
 import math
 import re
 import sys
-from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
@@ -12,13 +11,12 @@ from typing import Any, Callable
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from scripts.common import flatten_metrics, load_json, save_json
+from scripts.common import flatten_metrics, load_json, parse_log_metric_tables, save_json
 
 DATA_DIR = ROOT / "data"
 RESULTS_DIR = DATA_DIR / "results"
 INDEX_PATH = DATA_DIR / "index.json"
 CONFIG_PATH = DATA_DIR / "config.json"
-ALERTS_PATH = DATA_DIR / "alerts.json"
 CHARTS_DIR = ROOT / "docs" / "assets" / "charts"
 QWEN3_OMNI_HISTORY_PATH = CHARTS_DIR / "qwen3_omni_history.json"
 QWEN3_TTS_HISTORY_PATH = CHARTS_DIR / "qwen3_tts_history.json"
@@ -29,6 +27,8 @@ QWEN_IMAGE_EDIT_2509_HISTORY_PATH = CHARTS_DIR / "qwen_image_edit_2509_history.j
 QWEN_IMAGE_EDIT_2511_HISTORY_PATH = CHARTS_DIR / "qwen_image_edit_2511_history.json"
 WAN22_HISTORY_PATH = CHARTS_DIR / "wan22_history.json"
 HUNYUAN_IMAGE3_HISTORY_PATH = CHARTS_DIR / "hunyuan_image3_history.json"
+HUNYUAN_IMAGE3_ACCURACY_PATH = CHARTS_DIR / "hunyuan_image3_accuracy.json"
+LOCAL_RAW_DIR = DATA_DIR / "local_nightly_raw"
 BAGEL_HISTORY_PATH = CHARTS_DIR / "bagel_history.json"
 VOXCPM2_HISTORY_PATH = CHARTS_DIR / "voxcpm2_history.json"
 DEFAULT_RESULT_DATASETS = frozenset({"random", "random-mm"})
@@ -67,6 +67,10 @@ QWEN_IMAGE_GROUP_FIELDS = (
     "dataset_name",
     "max_concurrency",
     "num_prompts",
+)
+HUNYUAN_ACCURACY_GROUP_FIELDS = (
+    "test_file",
+    "test_name",
 )
 MODEL_METRICS = {
     "Qwen3-Omni": [
@@ -129,21 +133,6 @@ def average_metric(results: list[dict[str, Any]], metric: str) -> float | None:
     if not values:
         return None
     return round(sum(values) / len(values), 4)
-
-
-def build_line_chart(
-    dates: list[str],
-    values: list[float | None],
-    y_min: float | None = None,
-    y_max: float | None = None,
-) -> dict[str, Any]:
-    return {
-        "tooltip": {"trigger": "axis"},
-        "grid": {"left": 56, "right": 24, "top": 36, "bottom": 42},
-        "xAxis": {"type": "category", "data": dates, "axisLabel": {"color": "#5b6775"}},
-        "yAxis": {"type": "value", "min": y_min, "max": y_max},
-        "series": [{"type": "line", "data": values, "smooth": True, "symbolSize": 7, "lineStyle": {"width": 3}}],
-    }
 
 
 def chart_slug(value: str) -> str:
@@ -490,14 +479,7 @@ def _history_payload_from_records(
     def _normalize_filter_fields(item: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(item)
         if normalized.get("qps") in (None, ""):
-            normalized["qps"] = next(
-                (
-                    normalized.get(field)
-                    for field in ("request_throughput", "throughput_qps", "output_throughput")
-                    if normalized.get(field) not in (None, "")
-                ),
-                None,
-            )
+            normalized["qps"] = normalized.get("request_rate")
         if normalized.get("input_len") in (None, ""):
             normalized["input_len"] = normalized.get("random_input_len")
         if normalized.get("output_len") in (None, ""):
@@ -547,6 +529,7 @@ def _history_payload_from_records(
         "metric_groups": page_config.get("metric_groups", []),
         "group_fields": list(group_fields),
         "chart_point_per_day": bool(page_config.get("chart_point_per_day", True)),
+        "default_visible_series": page_config.get("default_visible_series"),
         "record_count": len(records),
         "group_count": len(grouped_payload),
         "records": records,
@@ -723,6 +706,83 @@ def build_hunyuan_image3_history_payload(config: dict[str, Any], source_dir: Pat
     )
 
 
+def _metric_field_name(label: str) -> str:
+    """Map a table metric label to a record field key, e.g. "PSNR (dB)" -> "psnr_db"."""
+    return re.sub(r"_+", "_", re.sub(r"[^a-z0-9]+", "_", label.lower())).strip("_")
+
+
+def load_hunyuan_local_accuracy_records(raw_root: Path) -> tuple[list[dict[str, Any]], dict[str, str]]:
+    """Load accuracy metric tables from local manual pytest logs.
+
+    Scans every ``manual_YYYYMMDD/*.log`` under ``raw_root`` (filenames vary, so no
+    name-based filtering) and keeps rows attributed to hunyuan test files. The table
+    reference column (L20x Reference) is stored as ``baseline_<metric>`` so the chart
+    renderer draws it as the baseline line.
+
+    Returns ``(records, metric_labels)`` where ``metric_labels`` maps the sanitized
+    field key back to the original table label for chart titles.
+    """
+    records: list[dict[str, Any]] = []
+    metric_labels: dict[str, str] = {}
+    if not raw_root.is_dir():
+        return records, metric_labels
+
+    for log_path in sorted(raw_root.glob("manual_*/*.log")):
+        date_match = re.fullmatch(r"manual_(\d{8})", log_path.parent.name)
+        if not date_match:
+            continue
+        raw_date = date_match.group(1)
+        date = f"{raw_date[:4]}-{raw_date[4:6]}-{raw_date[6:8]}"
+        try:
+            text = log_path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+
+        by_case: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        for row in parse_log_metric_tables(text):
+            test_file = str(row.get("test_file") or "")
+            if "hunyuan" not in test_file:
+                continue
+            by_case.setdefault((test_file, str(row.get("test_name") or "")), []).append(row)
+
+        for (test_file, test_name), case_rows in sorted(by_case.items()):
+            record: dict[str, Any] = {
+                "date": date,
+                "sort_timestamp": f"{date}T00:00:00",
+                "test_file": test_file,
+                "test_name": test_name,
+                "source_file": log_path.name,
+                "config_key": f"{test_file}::{test_name}",
+            }
+            for row in case_rows:
+                field = _metric_field_name(row["metric"])
+                metric_labels[field] = row["metric"]
+                record[field] = row["value"]
+                if row["reference"] is not None:
+                    record[f"baseline_{field}"] = row["reference"]
+            records.append(record)
+
+    return records, metric_labels
+
+
+def build_hunyuan_image3_accuracy_payload(config: dict[str, Any], raw_root: Path) -> dict[str, Any]:
+    records, metric_labels = load_hunyuan_local_accuracy_records(raw_root)
+    payload = _history_payload_from_records(
+        config,
+        raw_root,
+        "hunyuan_image3_accuracy",
+        "Hunyuan Image 3 - Local Accuracy",
+        HUNYUAN_ACCURACY_GROUP_FIELDS,
+        records,
+    )
+    metric_fields = sorted(metric_labels)
+    payload["metric_groups"] = [
+        {"id": field, "title": metric_labels[field], "metrics": [field]} for field in metric_fields
+    ]
+    payload["table_columns"] = ["date", "test_file", "test_name", *metric_fields, "source_file"]
+    return payload
+
+
 def build_bagel_history_payload(config: dict[str, Any], source_dir: Path) -> dict[str, Any]:
     return build_qwen_image_family_history_payload(
         config,
@@ -774,59 +834,6 @@ def build_multi_series_chart(
     }
 
 
-def build_heatmap(config: dict[str, Any], latest_results: list[dict[str, Any]]) -> dict[str, Any]:
-    hardware_keys = list(config["hardware"].keys())
-    hardware_labels = [config["hardware"][hardware]["display_name"] for hardware in hardware_keys]
-    model_keys = list(config["models"].keys())
-    model_labels = [config["models"][model]["display_name"] for model in model_keys]
-    values = []
-    lookup = {(item["model"], item["hardware"]): flatten_metrics(item["metrics"]).get("pass_rate") for item in latest_results}
-    for model_index, model in enumerate(model_keys):
-        for hw_index, hardware in enumerate(hardware_keys):
-            values.append([hw_index, model_index, lookup.get((model, hardware))])
-
-    return {
-        "tooltip": {},
-        "grid": {"left": 128, "right": 96, "top": 18, "bottom": 58},
-        "xAxis": {"type": "category", "data": hardware_labels, "axisLabel": {"interval": 0, "rotate": 18, "fontSize": 11}},
-        "yAxis": {"type": "category", "data": model_labels, "axisLabel": {"fontSize": 11}},
-        "visualMap": {
-            "min": 0,
-            "max": 1,
-            "calculable": True,
-            "orient": "vertical",
-            "right": 18,
-            "top": "middle",
-            "inRange": {"color": ["#c84d57", "#f2d27a", "#60b27c"]},
-        },
-        "series": [{"type": "heatmap", "data": values}],
-    }
-
-
-def build_summary(index: dict[str, Any], latest_results: list[dict[str, Any]], alerts: dict[str, Any]) -> dict[str, Any]:
-    active_alerts = [item for item in alerts.get("alerts", []) if not item.get("resolved")]
-    level_counts = Counter(item.get("level", "warning") for item in active_alerts)
-    if not latest_results:
-        return {
-            "latest_date": None,
-            "overall_pass_rate": None,
-            "overall_latency_p99_ms": None,
-            "latest_commit": None,
-            "recent_alerts": 0,
-            "warning_alerts": 0,
-            "critical_alerts": 0,
-        }
-    return {
-        "latest_date": sorted(index.get("dates", []))[-1],
-        "overall_pass_rate": average_metric(latest_results, "pass_rate"),
-        "overall_latency_p99_ms": average_metric(latest_results, "latency_p99_ms"),
-        "latest_commit": max(latest_results, key=lambda item: item["timestamp"])["commit"],
-        "recent_alerts": len(active_alerts),
-        "warning_alerts": level_counts.get("warning", 0),
-        "critical_alerts": level_counts.get("critical", 0),
-    }
-
-
 def build_hardware_status(config: dict[str, Any], latest_results: list[dict[str, Any]]) -> dict[str, Any]:
     hardware_status = []
     for hardware_key, hardware_config in config.get("hardware", {}).items():
@@ -856,26 +863,12 @@ def build_hardware_status(config: dict[str, Any], latest_results: list[dict[str,
 def main() -> int:
     config = load_json(CONFIG_PATH, {})
     index = load_json(INDEX_PATH, {"dates": []})
-    alerts = load_json(ALERTS_PATH, {"alerts": []})
     dates = sorted(index.get("dates", []))
     day_results = {date: load_json(RESULTS_DIR / f"{date}.json", {"results": []}).get("results", []) for date in dates}
 
-    pass_rate_values = [average_metric(day_results[date], "pass_rate") for date in dates]
-    latency_values = [average_metric(day_results[date], "latency_p99_ms") for date in dates]
     hardware_items = [(key, value["display_name"]) for key, value in config.get("hardware", {}).items()]
 
-    for range_key, window in RANGE_WINDOWS.items():
-        save_chart(
-            f"pass_rate_trend_{range_key}",
-            build_line_chart(dates[-window:], pass_rate_values[-window:], 0, 1),
-        )
-        save_chart(
-            f"latency_p99_trend_{range_key}",
-            build_line_chart(dates[-window:], latency_values[-window:]),
-        )
     latest_results = day_results[dates[-1]] if dates else []
-    save_chart("pass_rate_heatmap", build_heatmap(config, latest_results))
-    save_chart("summary", build_summary(index, latest_results, alerts))
     save_chart("hardware_status", build_hardware_status(config, latest_results))
     qwen3_omni_source_dir = RESULTS_DIR / config.get("kanban_pages", {}).get("qwen3_omni_history", {}).get("source_dir", "qwen3omni")
     save_json(QWEN3_OMNI_HISTORY_PATH, build_qwen3_omni_history_payload(config, qwen3_omni_source_dir))
@@ -895,6 +888,7 @@ def main() -> int:
     save_json(WAN22_HISTORY_PATH, build_wan22_history_payload(config, wan22_source_dir))
     hunyuan_image3_source_dir = RESULTS_DIR / config.get("kanban_pages", {}).get("hunyuan_image3_history", {}).get("source_dir", "hunyuan_image3")
     save_json(HUNYUAN_IMAGE3_HISTORY_PATH, build_hunyuan_image3_history_payload(config, hunyuan_image3_source_dir))
+    save_json(HUNYUAN_IMAGE3_ACCURACY_PATH, build_hunyuan_image3_accuracy_payload(config, LOCAL_RAW_DIR))
     bagel_source_dir = RESULTS_DIR / config.get("kanban_pages", {}).get("bagel_history", {}).get("source_dir", "bagel")
     save_json(BAGEL_HISTORY_PATH, build_bagel_history_payload(config, bagel_source_dir))
     voxcpm2_source_dir = RESULTS_DIR / config.get("kanban_pages", {}).get("voxcpm2_history", {}).get("source_dir", "voxcpm2")

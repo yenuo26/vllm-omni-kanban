@@ -87,6 +87,7 @@ def test_qwen3_omni_history_groups_and_sorts_by_config_and_time(repo_root: Path,
         "backend": "openai-chat-omni",
         "model_id": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
         "tokenizer_id": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+        "request_rate": "inf",
         "request_throughput": 0.12,
         "output_throughput": 12.2,
         "total_token_throughput": 24.4,
@@ -120,6 +121,8 @@ def test_qwen3_omni_history_groups_and_sorts_by_config_and_time(repo_root: Path,
         "2026-03-09 18:17:45",
         "2026-03-08 18:15:48",
     ]
+    assert payload["records"][0]["qps"] == "inf"
+    assert payload["filter_options"]["qps"] == ["inf"]
 
 
 def test_wan22_benchmark_only_loads_diffusion_result_with_wan22_in_name(tmp_path: Path) -> None:
@@ -297,9 +300,6 @@ def test_output_files_created(repo_root: Path) -> None:
         check=False,
     )
     assert result.returncode == 0
-    assert (repo_root / "docs" / "assets" / "charts" / "pass_rate_trend_1d.json").exists()
-    assert (repo_root / "docs" / "assets" / "charts" / "pass_rate_trend_7d.json").exists()
-    assert (repo_root / "docs" / "assets" / "charts" / "pass_rate_trend_30d.json").exists()
     assert (repo_root / "docs" / "assets" / "charts" / "qwen3_omni_throughput_tokens_per_sec_1d.json").exists()
     assert (repo_root / "docs" / "assets" / "charts" / "qwen3_omni_throughput_tokens_per_sec_7d.json").exists()
     assert (repo_root / "docs" / "assets" / "charts" / "qwen3_omni_throughput_tokens_per_sec_30d.json").exists()
